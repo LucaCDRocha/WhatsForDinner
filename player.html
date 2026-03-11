@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>What's For Dinner?</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Poppins", "Arial", sans-serif;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				transition: background 0.5s ease;
+				padding: 20px;
+			}
+
+			body.waiting {
+				background: #6b9bd1;
+			}
+			body.ready {
+				background: #6b9bd1;
+			}
+			body.playing {
+				background: #6b9bd1;
+			}
+			body.won {
+				background: #95d5b2;
+			}
+			body.lost {
+				background: #f4b28f;
+			}
+
+			.container {
+				width: 100%;
+				max-width: 1000px;
+			}
+
+			.card {
+				background: #fff8e7;
+				border-radius: 30px;
+				padding: 60px 50px;
+				box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+				text-align: center;
+			}
+
+			h1 {
+				font-size: 4rem;
+				font-weight: 900;
+				margin-bottom: 20px;
+				color: #000000;
+			}
+
+			h2 {
+				font-size: 2.5rem;
+				font-weight: 700;
+				margin-bottom: 30px;
+				color: #000000;
+			}
+
+			.subtitle {
+				font-size: 1.3rem;
+				color: #000000;
+				margin-bottom: 40px;
+				line-height: 1.6;
+			}
+
+			.countdown-box {
+				background: #fff8e7;
+				border-radius: 20px;
+				padding: 15px 30px;
+				margin-bottom: 30px;
+				font-size: 1.2rem;
+				color: #000000;
+				font-weight: 600;
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+				text-align: center;
+			}
+
+			.title-box {
+				background: #fff8e7;
+				border-radius: 30px;
+				padding: 50px;
+				margin-bottom: 40px;
+				box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			}
+
+			.role-badge {
+				display: inline-block;
+				padding: 15px 40px;
+				border-radius: 50px;
+				font-size: 1.8rem;
+				font-weight: 700;
+				color: white;
+				margin-bottom: 30px;
+				box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+			}
+
+			.situations-container {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 40px;
+				margin: 30px 0;
+			}
+
+			.section-title {
+				font-size: 1.5rem;
+				font-weight: 700;
+				color: #000000;
+				margin-bottom: 15px;
+				text-align: left;
+			}
+
+			.info-box {
+				background: transparent;
+				padding: 0;
+				margin: 0;
+				text-align: left;
+				font-size: 1.2rem;
+				line-height: 1.8;
+				color: #000000;
+			}
+
+			.question-container {
+				position: relative;
+				margin: 40px 0;
+			}
+
+			.question-box {
+				background: #fff8e7;
+				border-radius: 30px;
+				padding: 60px 50px;
+				margin: 0;
+				font-size: 2.5rem;
+				font-weight: 700;
+				color: #000000;
+				text-align: center;
+				box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+				position: relative;
+				min-height: 180px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.input-group {
+				margin: 30px 0;
+				position: relative;
+			}
+
+			.voice-record-btn {
+				position: absolute;
+				bottom: 20px;
+				right: 30px;
+				background: #6b9bd1;
+				color: white;
+				border: none;
+				padding: 15px 35px;
+				border-radius: 25px;
+				font-size: 1.3rem;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.3s;
+				box-shadow: 0 6px 20px rgba(107, 155, 209, 0.4);
+				z-index: 10;
+			}
+
+			.voice-record-btn:hover:not(:disabled) {
+				background: #5a8bc1;
+				transform: translateY(-3px);
+				box-shadow: 0 8px 25px rgba(107, 155, 209, 0.5);
+			}
+
+			.voice-record-btn.recording {
+				background: #f4b28f;
+				animation: pulse 1.5s infinite;
+			}
+
+			.voice-record-btn:disabled {
+				background: #95d5b2;
+				opacity: 1;
+				cursor: not-allowed;
+			}
+
+			@keyframes pulse {
+				0%,
+				100% {
+					transform: scale(1);
+				}
+				50% {
+					transform: scale(1.05);
+				}
+			}
+
+			textarea {
+				width: 100%;
+				min-height: 150px;
+				padding: 20px;
+				border: 3px solid #dfe6e9;
+				border-radius: 15px;
+				font-size: 1.2rem;
+				font-family: inherit;
+				resize: vertical;
+				transition: border-color 0.3s;
+			}
+
+			textarea:focus {
+				outline: none;
+				border-color: #667eea;
+			}
+
+			button {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				border: none;
+				padding: 20px 60px;
+				border-radius: 50px;
+				font-size: 1.5rem;
+				font-weight: 700;
+				cursor: pointer;
+				transition:
+					transform 0.2s,
+					box-shadow 0.2s;
+				box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+				margin: 10px;
+			}
+
+			button:hover:not(:disabled) {
+				transform: translateY(-3px);
+				box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+			}
+
+			button:active:not(:disabled) {
+				transform: translateY(-1px);
+			}
+
+			button:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			.button-success {
+				background: linear-gradient(135deg, #2ed573 0%, #7bed9f 100%);
+				box-shadow: 0 10px 30px rgba(46, 213, 115, 0.4);
+			}
+
+			.button-danger {
+				background: linear-gradient(135deg, #d63031 0%, #ff7675 100%);
+				box-shadow: 0 10px 30px rgba(214, 48, 49, 0.4);
+			}
+
+			.tension-meter {
+				margin: 40px 0;
+				text-align: center;
+			}
+
+			.tension-label {
+				font-size: 1.5rem;
+				font-weight: 700;
+				color: #2d3436;
+				margin-bottom: 15px;
+			}
+
+			.tension-bar {
+				width: 100%;
+				height: 40px;
+				background: #dfe6e9;
+				border-radius: 20px;
+				overflow: hidden;
+				position: relative;
+				box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.1);
+			}
+
+			.tension-fill {
+				height: 100%;
+				background: linear-gradient(90deg, #2ed573 0%, #ffc107 50%, #d63031 100%);
+				border-radius: 20px;
+				transition: width 1s ease;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: white;
+				font-weight: 700;
+				font-size: 1.2rem;
+			}
+
+			.player-list {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 15px;
+				margin: 30px 0;
+			}
+
+			.player-item {
+				background: white;
+				border-radius: 15px;
+				padding: 15px;
+				border: 3px solid #dfe6e9;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			.player-item.ready {
+				border-color: #2ed573;
+				background: #f0fff4;
+			}
+
+			.player-dot {
+				width: 20px;
+				height: 20px;
+				border-radius: 50%;
+				flex-shrink: 0;
+			}
+
+			.player-name {
+				font-weight: 600;
+				color: #2d3436;
+			}
+
+			.elphi-message {
+				background: #fff8e7;
+				border-radius: 20px;
+				padding: 25px 35px;
+				margin: 30px auto;
+				max-width: 600px;
+				text-align: center;
+				box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+			}
+
+			.elphi-label {
+				font-size: 1rem;
+				font-weight: 600;
+				color: #000000;
+				margin-bottom: 10px;
+			}
+
+			.elphi-text {
+				font-size: 1.4rem;
+				font-weight: 600;
+				color: #000000;
+			}
+
+			.hidden {
+				display: none !important;
+			}
+
+			.loading {
+				display: inline-block;
+				width: 20px;
+				height: 20px;
+				border: 3px solid rgba(255, 255, 255, 0.3);
+				border-radius: 50%;
+				border-top-color: white;
+				animation: spin 1s linear infinite;
+			}
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			.status-indicator {
+				position: fixed;
+				top: 20px;
+				right: 20px;
+				padding: 10px 20px;
+				border-radius: 50px;
+				font-weight: 600;
+				font-size: 0.9rem;
+				color: white;
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+			}
+
+			.status-connected {
+				background: #2ed573;
+			}
+			.status-connecting {
+				background: #ffc107;
+			}
+			.status-disconnected {
+				background: #d63031;
+			}
+
+			@media (max-width: 768px) {
+				.situations-container {
+					grid-template-columns: 1fr;
+					gap: 20px;
+				}
+
+				.voice-record-btn {
+					position: static;
+					display: block;
+					margin: 20px auto 0;
+					width: auto;
+				}
+
+				.card {
+					padding: 40px 30px;
+				}
+				h1 {
+					font-size: 3rem;
+				}
+				h2 {
+					font-size: 2rem;
+				}
+				.subtitle {
+					font-size: 1.2rem;
+				}
+				.role-badge {
+					font-size: 1.5rem;
+					padding: 12px 30px;
+				}
+				.question-box {
+					font-size: 1.5rem;
+					padding: 20px;
+				}
+				.countdown-box {
+					font-size: 1rem;
+				}
+			}
+		</style>
+	</head>
+	<body class="waiting">
+		<div class="status-indicator status-connecting"><span class="loading"></span> Connecting...</div>
+
+		<div class="container">
+			<!-- Welcome Screen -->
+			<div id="welcomeScreen">
+				<div class="countdown-box" id="countdownBox">... Waiting for people to join</div>
+
+				<div class="title-box">
+					<h2>Welcome to the show<br />"What's for dinner?"</h2>
+				</div>
+
+				<div class="subtitle" style="color: #000000; font-size: 1.3rem">
+					A show where the contestants must collaborate<br />
+					to deflate the tension of a family.
+				</div>
+
+				<div class="player-list" id="playerList"></div>
+
+				<button
+					id="readyBtn"
+					class="button-primary"
+					onclick="markReady()"
+					style="
+						margin-top: 30px;
+						padding: 20px 50px;
+						font-size: 1.5rem;
+						background: #4caf50;
+						color: white;
+						border: none;
+						border-radius: 15px;
+						cursor: pointer;
+						font-weight: 600;
+					">
+					I'm Ready!
+				</button>
+			</div>
+
+			<div class="card">
+				<!-- Playing Screen -->
+				<div id="playingScreen" class="hidden">
+					<div class="role-badge" id="roleBadge">Loading...</div>
+
+					<div class="situations-container">
+						<div>
+							<div class="section-title">General situation</div>
+							<div class="info-box" id="generalContext">Loading scenario...</div>
+						</div>
+						<div>
+							<div class="section-title">Your situation</div>
+							<div class="info-box" id="yourSituation">Loading your role...</div>
+						</div>
+					</div>
+
+					<div class="question-container">
+						<div class="question-box" id="questionBox">What should they prioritize packing?</div>
+						<button
+							id="voiceRecordBtn"
+							class="voice-record-btn"
+							onclick="startVoiceAnswer()"
+							title="Click to record your answer">
+							🎤 Record
+						</button>
+					</div>
+
+					<div class="elphi-message hidden" id="elphiMessage">
+						<div class="elphi-label">Elphi subtitles</div>
+						<div class="elphi-text">No no no this is not good at all</div>
+					</div>
+
+					<!-- Hidden textarea for voice input storage -->
+					<textarea id="answerInput" style="display: none"></textarea>
+
+					<div class="tension-meter">
+						<div class="tension-label">Family Tension: <span id="tensionValue">50</span>%</div>
+						<div class="tension-bar">
+							<div class="tension-fill" id="tensionFill" style="width: 50%">
+								<span id="tensionText">50%</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Win Screen -->
+				<div id="winScreen" class="hidden">
+					<div class="card">
+						<h1>You win !</h1>
+						<div class="subtitle">You succeeded to lower the tension to 0</div>
+						<button class="button-success" onclick="resetGame()">Play Again</button>
+					</div>
+				</div>
+
+				<!-- Lose Screen -->
+				<div id="loseScreen" class="hidden">
+					<div class="card">
+						<h1>Game over</h1>
+						<div class="subtitle">You lose, the tension was too high for the family</div>
+						<button class="button-danger" onclick="resetGame()">Try Again</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Load modules in dependency order -->
+			<script src="js/config.js"></script>
+			<script src="js/state.js"></script>
+			<script src="js/api.js"></script>
+			<script src="js/websocket.js"></script>
+			<script src="js/ui.js"></script>
+			<script src="js/game.js"></script>
+			<script src="js/speech.js"></script>
+			<script src="js/tts.js"></script>
+			<script src="js/main.js"></script>
+		</div>
+	</body>
+</html>
