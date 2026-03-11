@@ -191,6 +191,11 @@ function updatePlayingScreen(state) {
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
 	const answerInput = document.getElementById("answerInput");
 
+	if (!voiceRecordBtn || !answerInput) {
+		console.error("Voice record button or answer input not found in DOM");
+		return;
+	}
+
 	if (playerData && playerData.response) {
 		voiceRecordBtn.disabled = true;
 		voiceRecordBtn.innerHTML = "✓ Answer Submitted";

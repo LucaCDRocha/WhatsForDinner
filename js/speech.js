@@ -179,6 +179,16 @@ function startVoiceAnswer() {
 		return;
 	}
 
+	// Check if microphone is assigned (for multi-mic setup)
+	if (window.microphoneManager) {
+		const assignedChannel = window.microphoneManager.getAssignedChannel();
+		if (assignedChannel !== null) {
+			console.log(`🎤 Using assigned microphone: Channel ${assignedChannel + 1}`);
+		} else {
+			console.warn("⚠️ No microphone channel assigned. Using default device.");
+		}
+	}
+
 	// Initialize if needed
 	if (!recognition) {
 		const initialized = initSpeechRecognition();

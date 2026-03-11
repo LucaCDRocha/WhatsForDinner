@@ -447,7 +447,147 @@
 				</div>
 
 				<div class="player-list" id="playerList"></div>
-
+				<!-- Microphone Setup -->
+				<div
+					id="micSetup"
+					style="
+						margin: 20px auto;
+						max-width: 600px;
+						background: #fff8e7;
+						padding: 20px;
+						border-radius: 10px;
+						border: 2px solid #6b9bd1;
+					">
+					<h3 style="color: #000; margin: 0 0 15px 0; font-size: 1.2rem">🎤 Microphone Setup</h3>
+					<div style="margin-bottom: 10px; color: #000">
+						<strong>Your Mic:</strong>
+						<span id="micChannelDisplay" style="color: #6b9bd1; font-weight: bold">Not assigned</span>
+					</div>
+					<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px">
+						<button
+							onclick="testMicrophone()"
+							style="
+								padding: 10px 20px;
+								background: #6b9bd1;
+								color: white;
+								border: none;
+								border-radius: 8px;
+								cursor: pointer;
+								font-size: 1rem;
+							">
+							🔧 Test 4 Mics
+						</button>
+						<button
+							onclick="assignMicToPlayer()"
+							style="
+								padding: 10px 20px;
+								background: #4caf50;
+								color: white;
+								border: none;
+								border-radius: 8px;
+								cursor: pointer;
+								font-size: 1rem;
+							">
+							✓ Assign Mic
+						</button>
+					</div>
+					<div
+						id="micLevels"
+						style="display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px">
+						<div class="mic-meter" data-channel="0">
+							<div style="font-weight: bold; color: #000; margin-bottom: 5px">Mic 1</div>
+							<div
+								class="meter-bar"
+								style="
+									height: 100px;
+									background: #ddd;
+									border-radius: 5px;
+									overflow: hidden;
+									position: relative;
+								">
+								<div
+									class="meter-fill"
+									style="
+										position: absolute;
+										bottom: 0;
+										width: 100%;
+										background: #4caf50;
+										transition: height 0.1s;
+									"></div>
+							</div>
+							<div class="meter-value" style="margin-top: 5px; color: #000; font-size: 0.9rem">0</div>
+						</div>
+						<div class="mic-meter" data-channel="1">
+							<div style="font-weight: bold; color: #000; margin-bottom: 5px">Mic 2</div>
+							<div
+								class="meter-bar"
+								style="
+									height: 100px;
+									background: #ddd;
+									border-radius: 5px;
+									overflow: hidden;
+									position: relative;
+								">
+								<div
+									class="meter-fill"
+									style="
+										position: absolute;
+										bottom: 0;
+										width: 100%;
+										background: #4caf50;
+										transition: height 0.1s;
+									"></div>
+							</div>
+							<div class="meter-value" style="margin-top: 5px; color: #000; font-size: 0.9rem">0</div>
+						</div>
+						<div class="mic-meter" data-channel="2">
+							<div style="font-weight: bold; color: #000; margin-bottom: 5px">Mic 3</div>
+							<div
+								class="meter-bar"
+								style="
+									height: 100px;
+									background: #ddd;
+									border-radius: 5px;
+									overflow: hidden;
+									position: relative;
+								">
+								<div
+									class="meter-fill"
+									style="
+										position: absolute;
+										bottom: 0;
+										width: 100%;
+										background: #4caf50;
+										transition: height 0.1s;
+									"></div>
+							</div>
+							<div class="meter-value" style="margin-top: 5px; color: #000; font-size: 0.9rem">0</div>
+						</div>
+						<div class="mic-meter" data-channel="3">
+							<div style="font-weight: bold; color: #000; margin-bottom: 5px">Mic 4</div>
+							<div
+								class="meter-bar"
+								style="
+									height: 100px;
+									background: #ddd;
+									border-radius: 5px;
+									overflow: hidden;
+									position: relative;
+								">
+								<div
+									class="meter-fill"
+									style="
+										position: absolute;
+										bottom: 0;
+										width: 100%;
+										background: #4caf50;
+										transition: height 0.1s;
+									"></div>
+							</div>
+							<div class="meter-value" style="margin-top: 5px; color: #000; font-size: 0.9rem">0</div>
+						</div>
+					</div>
+				</div>
 				<button
 					id="readyBtn"
 					class="button-primary"
@@ -538,6 +678,7 @@
 			<script src="js/websocket.js"></script>
 			<script src="js/ui.js"></script>
 			<script src="js/game.js"></script>
+			<script src="js/microphone.js"></script>
 			<script src="js/speech.js"></script>
 			<script src="js/tts.js"></script>
 			<script src="js/main.js"></script>

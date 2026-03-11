@@ -74,6 +74,14 @@ function handleJoined(player) {
 		roleBadge.style.background = player.color;
 	}
 
+	// Update microphone display with player number
+	const micChannelDisplay = document.getElementById("micChannelDisplay");
+	if (micChannelDisplay && playerId) {
+		micChannelDisplay.textContent = `Player ${playerId} → Use Mic ${playerId}`;
+		micChannelDisplay.style.color = "#000";
+		micChannelDisplay.style.fontWeight = "bold";
+	}
+
 	// Update ready button state
 	const readyBtn = document.getElementById("readyBtn");
 	if (readyBtn && playerData) {
@@ -172,6 +180,12 @@ function markReady() {
  */
 function submitAnswer() {
 	const answerInput = document.getElementById("answerInput");
+
+	if (!answerInput) {
+		console.error("Answer input not found");
+		return;
+	}
+
 	const answer = answerInput.value.trim();
 
 	if (!answer) {
@@ -191,11 +205,16 @@ function submitAnswer() {
 		}),
 	);
 
-	// Update button
-	const submitBtn = document.getElementById("submitBtn");
-	submitBtn.disabled = true;
-	submitBtn.textContent = "✓ Answer Submitted";
-	answerInput.disabled = true;
+	// Update button (now using voice record button)
+	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+	if (voiceRecordBtn) {
+		voiceRecordBtn.disabled = true;
+		voiceRecordBtn.textContent = "✓ Answer Submitted";
+	}
+
+	if (answerInput) {
+		answerInput.disabled = true;
+	}
 
 	console.log("✅ Answer submitted:", answer);
 }
