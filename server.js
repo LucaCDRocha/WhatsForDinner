@@ -306,6 +306,7 @@ Be strict - only say YES if responses show clear coordination and agreement on w
 			}
 
 			gameState.tension = newTension;
+			gameState.feedback = reason; // Add feedback to gameState so it gets broadcast
 
 			console.log(
 				`📊 Analysis: ${action} by ${amount} | Tension: ${gameState.tension} → ${newTension} | Reason: ${reason}`,

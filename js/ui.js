@@ -246,4 +246,31 @@ function updatePlayingScreen(state) {
 	} else if (!allAnswered && statusMessage) {
 		statusMessage.remove();
 	}
+
+	// Display AI feedback and reasoning when available
+	if (state.feedback) {
+		console.log("🎯 Displaying feedback from state:", state.feedback);
+
+		// Show Elphi subtitle
+		const elphiMessage = document.getElementById("elphiMessage");
+		const elphiText = elphiMessage?.querySelector(".elphi-text");
+		if (elphiMessage && elphiText) {
+			elphiText.textContent = state.feedback;
+			elphiMessage.classList.remove("hidden");
+		}
+
+		// Show AI reasoning section
+		const aiReasoning = document.getElementById("aiReasoning");
+		const reasoningText = document.getElementById("reasoningText");
+		if (aiReasoning && reasoningText) {
+			reasoningText.textContent = state.feedback;
+			aiReasoning.classList.remove("hidden");
+			console.log("✅ AI Reasoning section displayed from state update");
+		}
+
+		// Remove "analyzing" status message if it exists
+		if (statusMessage) {
+			statusMessage.remove();
+		}
+	}
 }
