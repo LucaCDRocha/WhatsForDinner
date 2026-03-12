@@ -161,7 +161,7 @@ function handleStateUpdate(state) {
 }
 
 /**
- * Mark player as ready
+ * Mark player as ready (toggle)
  */
 function markReady() {
 	if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -183,15 +183,57 @@ function markReady() {
 		playerData.ready = newReadyState;
 	}
 
-	// Update button
-	const readyBtn = document.getElementById("readyBtn");
-	if (readyBtn) {
+	// Update status display (minimal)
+	const readyStatus = document.getElementById("readyStatus");
+	if (readyStatus) {
 		if (newReadyState) {
-			readyBtn.textContent = "✓ Ready!";
-			readyBtn.style.background = "#45a049";
+			readyStatus.textContent = "✓ Ready";
+			readyStatus.style.color = "#4CAF50";
+			readyStatus.style.opacity = "0.5";
 		} else {
-			readyBtn.textContent = "I'm Ready!";
-			readyBtn.style.background = "#4CAF50";
+			readyStatus.textContent = "Press R";
+			readyStatus.style.color = "#999";
+			readyStatus.style.opacity = "0.3";
+		}
+	}
+}
+
+/**
+ * Mark player ready with specific state (for keyboard control)
+ */
+function markReadyWithState(readyState) {
+	if (!ws || ws.readyState !== WebSocket.OPEN) {
+		console.log("Not connected to server");
+		return;
+	}
+
+	// Only send if state is changing
+	if (playerData && playerData.ready === readyState) {
+		return;
+	}
+
+	ws.send(
+		JSON.stringify({
+			type: "ready",
+			ready: readyState,
+		}),
+	);
+
+	if (playerData) {
+		playerData.ready = readyState;
+	}
+
+	// Update status display (minimal)
+	const readyStatus = document.getElementById("readyStatus");
+	if (readyStatus) {
+		if (readyState) {
+			readyStatus.textContent = "✓ Ready";
+			readyStatus.style.color = "#4CAF50";
+			readyStatus.style.opacity = "0.5";
+		} else {
+			readyStatus.textContent = "Press R";
+			readyStatus.style.color = "#999";
+			readyStatus.style.opacity = "0.3";
 		}
 	}
 }

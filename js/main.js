@@ -6,6 +6,27 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Connect to WebSocket server
 	connect();
 
+	// Add keyboard listener for ready state - just 'r' key to toggle
+	document.addEventListener("keydown", (event) => {
+		// Only handle 'r' key when on welcome screen
+		const welcomeScreen = document.getElementById("welcomeScreen");
+		if (!welcomeScreen || welcomeScreen.classList.contains("hidden")) {
+			return;
+		}
+
+		// Only trigger if 'r' is pressed WITHOUT any modifier keys
+		if (
+			(event.key === "r" || event.key === "R") &&
+			!event.ctrlKey &&
+			!event.altKey &&
+			!event.shiftKey &&
+			!event.metaKey
+		) {
+			// Toggle ready state
+			markReady();
+		}
+	});
+
 	console.log("✅ Game initialized");
 });
 
