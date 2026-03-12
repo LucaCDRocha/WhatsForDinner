@@ -212,13 +212,18 @@ function startVoiceAnswer() {
 	}
 
 	// Check if microphone is assigned (for multi-mic setup)
+	let playerRole = "Player";
+	if (typeof playerData !== "undefined" && playerData) {
+		playerRole = playerData.roleIndex === 0 ? "Player 1" : "Player 2";
+	}
+
 	if (window.microphoneManager) {
 		const assignedChannel = window.microphoneManager.getAssignedChannel();
 		if (assignedChannel !== null) {
-			console.log(`🎤 Starting recording for player assigned to Channel ${assignedChannel + 1}`);
-			console.log(`⚠️ Note: Please ensure player speaks into their assigned microphone`);
+			console.log(`🎤 ${playerRole}: Starting recording on Channel ${assignedChannel + 1}`);
+			console.log(`⚠️ ${playerRole}: Please speak into your assigned microphone`);
 		} else {
-			console.warn("⚠️ No microphone channel assigned. Using default device.");
+			console.warn(`⚠️ ${playerRole}: No microphone channel assigned. Using default device.`);
 		}
 	}
 

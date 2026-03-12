@@ -191,8 +191,10 @@ function updatePlayingScreen(state) {
 				elphiMessage.classList.add("hidden");
 			}
 
-			// Start thinking timer for new question (only if player hasn't answered)
-			if (playerData && !playerData.response) {
+			// Turn-based system: Only Player 1 starts immediately with thinking time
+			// Player 2 will start recording immediately when Player 1 finishes
+			if (playerData && !playerData.response && playerData.roleIndex === 0) {
+				console.log("🎤 Player 1's turn to speak");
 				startThinkingTimer();
 			}
 		}
@@ -212,6 +214,8 @@ function updatePlayingScreen(state) {
 	// Check if player has already answered
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
 	const answerInput = document.getElementById("answerInput");
+	const timerDisplay = document.getElementById("timerDisplay");
+	const timerText = document.getElementById("timerText");
 
 	if (!voiceRecordBtn || !answerInput) {
 		console.error("Voice record button or answer input not found in DOM");
@@ -226,13 +230,51 @@ function updatePlayingScreen(state) {
 		voiceRecordBtn.classList.remove("recording");
 		answerInput.value = playerData.response;
 	} else if (!thinkingTimer && !isListening) {
-		// Only reset button if no timer is running and not currently recording
-		voiceRecordBtn.disabled = false;
-		voiceRecordBtn.innerHTML = "🎤 Record";
-		voiceRecordBtn.classList.remove("recording");
-		// Clear input for new question if it was previously filled
-		if (answerInput.value && !playerData.response) {
-			answerInput.value = "";
+		// Check turn-based logic
+		const player1 = state.players.find((p) => p.roleIndex === 0);
+		const player2 = state.players.find((p) => p.roleIndex === 1);
+
+		if (playerData.roleIndex === 1 && player1 && !player1.response) {
+			// Player 2 must wait for Player 1
+			voiceRecordBtn.disabled = true;
+			voiceRecordBtn.innerHTML = "⏳ Waiting for Player 1...";
+			voiceRecordBtn.classList.remove("recording");
+
+			// Show waiting message in timer display
+			if (timerDisplay && timerText) {
+				timerDisplay.classList.remove("hidden");
+				timerText.innerHTML = "⏳ Waiting for Player 1 to finish speaking...";
+			}
+		} else if (playerData.roleIndex === 1 && player1 && player1.response && !playerData.response) {
+			// Player 1 has answered, now it's Player 2's turn - start recording immediately
+			if (!thinkingTimer && !isListening) {
+				console.log("🎤 Player 1 finished, starting Player 2's recording immediately");
+
+				// Enable button and show recording state
+				voiceRecordBtn.disabled = false;
+				voiceRecordBtn.innerHTML = "🎤 Recording...";
+				voiceRecordBtn.classList.add("recording");
+
+				// Update timer display to show recording status
+				if (timerDisplay && timerText) {
+					timerDisplay.classList.remove("hidden");
+					timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
+				}
+
+				// Start recording immediately (no thinking time for Player 2)
+				setTimeout(() => {
+					startVoiceAnswer();
+				}, 500);
+			}
+		} else if (!playerData.response) {
+			// Default: reset button if no timer is running
+			voiceRecordBtn.disabled = false;
+			voiceRecordBtn.innerHTML = "🎤 Record";
+			voiceRecordBtn.classList.remove("recording");
+			// Clear input for new question if it was previously filled
+			if (answerInput.value) {
+				answerInput.value = "";
+			}
 		}
 	}
 	// If thinking timer or recording is active, don't change button state
@@ -307,7 +349,8 @@ function startThinkingTimer() {
 		}
 	}
 
-	console.log("🤔 Starting 10-second thinking timer...");
+	const playerRole = playerData ? (playerData.roleIndex === 0 ? "Player 1" : "Player 2") : "Player";
+	console.log(`🤔 ${playerRole}: Starting 10-second thinking timer...`);
 
 	// Start countdown
 	thinkingTimer = setInterval(() => {
@@ -333,7 +376,7 @@ function startThinkingTimer() {
 				timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
 			}
 
-			console.log("✅ Thinking time over! Auto-starting recording...");
+			console.log(`✅ ${playerRole}: Thinking time over! Auto-starting recording...`);
 
 			// Auto-start voice recording
 			setTimeout(() => {
