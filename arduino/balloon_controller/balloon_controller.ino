@@ -30,6 +30,20 @@ int targetTension = 50;
 const int MAX_TENSION = 100;
 const int MIN_TENSION = 0;
 
+// Valve position tracking
+const int VALVE_CLOSED = 0;    // 0 degrees - valve closed
+const int VALVE_OPEN = 90;     // 90 degrees - valve open
+int currentValveAngle = VALVE_CLOSED;  // Start with valve closed
+const int STEPS_FOR_90_DEGREES = stepsPerRevolution / 4;  // 512/4 = 128 steps for 90°
+
+// State tracking
+enum BalloonState {
+  IDLE,
+  INFLATING,
+  DEFLATING
+};
+BalloonState currentState = IDLE;
+
 // Timing
 const int UPDATE_INTERVAL = 100;  // Check for updates every 100ms
 unsigned long lastUpdate = 0;
@@ -44,8 +58,12 @@ void setup() {
   pinMode(pinRelay, OUTPUT);
   digitalWrite(pinRelay, LOW);  // Pump OFF initially
   
+  // Ensure valve is at closed position (0°)
+  currentValveAngle = VALVE_CLOSED;
+  
   Serial.println("Balloon Controller Ready!");
   Serial.println("Send: TENSION:<0-100>");
+  Serial.println("Valve at 0° (CLOSED), Pump OFF");
 }
 
 void loop() {
@@ -80,21 +98,64 @@ void loop() {
  */
 void updateBalloon() {
   if (currentTension == targetTension) {
-    // At target - turn off pump and keep valve closed
-    digitalWrite(pinRelay, LOW);
+    // Target reached - go to IDLE state
+    if (currentState != IDLE) {
+      // Transition to IDLE
+      digitalWrite(pinRelay, LOW);  // Turn pump OFF
+      closeValve();  // Ensure valve is closed at 0°
+      currentState = IDLE;
+      Serial.println("IDLE - Target reached");
+    }
     return;
   }
   
   int tensionDiff = targetTension - currentTension;
   
   if (tensionDiff > 0) {
-    // INFLATE: Need to increase tension
-    digitalWrite(pinRelay, HIGH);  // Turn pump ON
+    // Need to INFLATE
+    if (currentState != INFLATING) {
+      // Transition to INFLATING
+      closeValve();  // Make sure valve is closed
+      digitalWrite(pinRelay, HIGH);  // Turn pump ON
+      currentState = INFLATING;
+      Serial.println("STATE: INFLATING - Pump ON, Valve CLOSED");
+    }
     inflateStep();
+    
   } else {
-    // DEFLATE: Need to decrease tension
-    digitalWrite(pinRelay, LOW);  // Turn pump OFF
+    // Need to DEFLATE
+    if (currentState != DEFLATING) {
+      // Transition to DEFLATING
+      digitalWrite(pinRelay, LOW);  // Turn pump OFF
+      openValve();  // Open valve to 90°
+      currentState = DEFLATING;
+      Serial.println("STATE: DEFLATING - Pump OFF, Valve OPEN");
+    }
     deflateStep();
+  }
+}
+
+/**
+ * Open valve to 90 degrees for deflation
+ */
+void openValve() {
+  if (currentValveAngle != VALVE_OPEN) {
+    int stepsToMove = STEPS_FOR_90_DEGREES;
+    myStepper.step(stepsToMove);
+    currentValveAngle = VALVE_OPEN;
+    Serial.println("Valve OPENED to 90°");
+  }
+}
+
+/**
+ * Close valve to 0 degrees to block deflation
+ */
+void closeValve() {
+  if (currentValveAngle != VALVE_CLOSED) {
+    int stepsToMove = -STEPS_FOR_90_DEGREES;
+    myStepper.step(stepsToMove);
+    currentValveAngle = VALVE_CLOSED;
+    Serial.println("Valve CLOSED to 0°");
   }
 }
 
@@ -102,48 +163,26 @@ void updateBalloon() {
  * Inflate balloon (increase tension)
  */
 void inflateStep() {
-  // Pump is controlled in updateBalloon()
-  // Keep valve closed (stepper at position)
-  // No stepper movement needed
-  
-  // Increment tension gradually
+  // Pump is ON, valve is closed
+  // Just increment tension gradually
   currentTension++;
   
-  // Small delay for inflation
   delay(50);
   
   Serial.print("INFLATING -> Tension: ");
   Serial.println(currentTension);
-  
-  // Check if target reached
-  if (currentTension >= targetTension) {
-    Serial.println("TARGET REACHED - Pump will turn OFF");
-  }
 }
 
 /**
  * Deflate balloon (decrease tension)
  */
 void deflateStep() {
-  // Pump is controlled in updateBalloon()
-  
-  // Open valve using stepper motor
-  // Rotate to release air
-  int steps = 10;  // Small incremental release
-  myStepper.step(steps);
-  
-  // Decrement tension gradually
+  // Pump is OFF, valve is open at 90°
+  // Air escapes naturally, just decrement tension
   currentTension--;
   
   delay(50);
   
   Serial.print("DEFLATING -> Tension: ");
   Serial.println(currentTension);
-  
-  // Close valve if target reached
-  if (currentTension <= targetTension) {
-    // Return stepper to closed position (reverse steps)
-    myStepper.step(-steps);
-    Serial.println("TARGET REACHED - Valve CLOSED");
-  }
 }
