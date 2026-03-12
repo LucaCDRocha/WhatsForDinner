@@ -56,7 +56,7 @@ void setup() {
   
   // Initialize relay (pump)
   pinMode(pinRelay, OUTPUT);
-  digitalWrite(pinRelay, LOW);  // Pump OFF initially
+  digitalWrite(pinRelay, HIGH);  // Pump OFF initially (active LOW relay)
   
   // Ensure valve is at closed position (0°)
   currentValveAngle = VALVE_CLOSED;
@@ -101,7 +101,7 @@ void updateBalloon() {
     // Target reached - go to IDLE state
     if (currentState != IDLE) {
       // Transition to IDLE
-      digitalWrite(pinRelay, LOW);  // Turn pump OFF
+      digitalWrite(pinRelay, HIGH);  // Turn pump OFF (active LOW relay)
       closeValve();  // Ensure valve is closed at 0°
       currentState = IDLE;
       Serial.println("IDLE - Target reached");
@@ -116,7 +116,7 @@ void updateBalloon() {
     if (currentState != INFLATING) {
       // Transition to INFLATING
       closeValve();  // Make sure valve is closed
-      digitalWrite(pinRelay, HIGH);  // Turn pump ON
+      digitalWrite(pinRelay, LOW);  // Turn pump ON (active LOW relay)
       currentState = INFLATING;
       Serial.println("STATE: INFLATING - Pump ON, Valve CLOSED");
     }
@@ -126,7 +126,7 @@ void updateBalloon() {
     // Need to DEFLATE
     if (currentState != DEFLATING) {
       // Transition to DEFLATING
-      digitalWrite(pinRelay, LOW);  // Turn pump OFF
+      digitalWrite(pinRelay, HIGH);  // Turn pump OFF (active LOW relay)
       openValve();  // Open valve to 90°
       currentState = DEFLATING;
       Serial.println("STATE: DEFLATING - Pump OFF, Valve OPEN");
