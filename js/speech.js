@@ -122,6 +122,19 @@ function initSpeechRecognition() {
 			setTimeout(() => {
 				submitAnswer();
 			}, 500);
+		} else if (isListening) {
+			// No text captured but still listening - restart automatically
+			console.log("No speech detected but still listening - restarting recognition");
+			setTimeout(() => {
+				if (isListening && recognition) {
+					try {
+						recognition.start();
+						console.log("Recording restarted after automatic end");
+					} catch (e) {
+						console.log("Could not restart recording:", e);
+					}
+				}
+			}, 100);
 		} else {
 			stopSpeechRecognition();
 		}
