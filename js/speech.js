@@ -33,7 +33,6 @@ function initSpeechRecognition() {
 
 		// Update last speech time (user is speaking)
 		lastSpeechTime = Date.now();
-		resetSilenceTimer();
 
 		// Process all results from the current recognition session
 		for (let i = 0; i < event.results.length; i++) {
@@ -55,6 +54,11 @@ function initSpeechRecognition() {
 			} else if (interimTranscript) {
 				// Show interim results (preview only)
 				textarea.value = (originalText + " " + interimTranscript).trim();
+			}
+
+			// Only start silence timer if we have actual text to submit
+			if (textarea.value && textarea.value.trim().length > 0) {
+				resetSilenceTimer();
 			}
 		}
 	};
@@ -176,7 +180,7 @@ function updateVoiceRecordButton(listening) {
 			// Update timer display
 			if (timerDisplay && timerText) {
 				timerDisplay.classList.remove("hidden");
-				timerText.innerHTML = "🔴 Recording... (stops after 5s of silence)";
+				timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
 			}
 		} else {
 			button.innerHTML = "🎤 Record";
@@ -211,7 +215,8 @@ function startVoiceAnswer() {
 	if (window.microphoneManager) {
 		const assignedChannel = window.microphoneManager.getAssignedChannel();
 		if (assignedChannel !== null) {
-			console.log(`🎤 Using assigned microphone: Channel ${assignedChannel + 1}`);
+			console.log(`🎤 Starting recording for player assigned to Channel ${assignedChannel + 1}`);
+			console.log(`⚠️ Note: Please ensure player speaks into their assigned microphone`);
 		} else {
 			console.warn("⚠️ No microphone channel assigned. Using default device.");
 		}
@@ -241,7 +246,7 @@ function startVoiceAnswer() {
 	try {
 		recognition.start();
 		lastSpeechTime = Date.now(); // Initialize speech timer
-		resetSilenceTimer(); // Start silence detection
+		// Don't start silence timer yet - wait for actual speech to be detected
 		console.log("Started voice recording for answer");
 	} catch (error) {
 		console.error("Error starting voice recording:", error);
@@ -268,6 +273,8 @@ function isSpeechRecognitionSupported() {
  */
 function resetSilenceTimer() {
 	clearSilenceTimer();
+
+	console.log("⏱️ Silence detection active - will auto-stop after 5s of no speech");
 
 	silenceTimer = setTimeout(() => {
 		const timeSinceLastSpeech = Date.now() - lastSpeechTime;

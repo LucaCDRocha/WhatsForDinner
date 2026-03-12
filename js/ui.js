@@ -330,7 +330,7 @@ function startThinkingTimer() {
 
 			// Update timer display to show recording status
 			if (timerText) {
-				timerText.innerHTML = "🔴 Recording... (stops after 5s of silence)";
+				timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
 			}
 
 			console.log("✅ Thinking time over! Auto-starting recording...");
