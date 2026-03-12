@@ -103,15 +103,15 @@ function handlePlayerJoin(ws, playerId, data) {
 		return;
 	}
 
-	// Auto-assign microphone channel: first player = channel 0, second player = channel 1
-	const micChannel = gameState.players.length; // 0 for first player, 1 for second player
+	// Auto-assign microphone channel based on player role: Player 1 = Mic 1 (channel 0), Player 2 = Mic 2 (channel 1)
+	const micChannel = roleIndex; // Mic channel matches player number (0=Mic1, 1=Mic2)
 
 	const player = {
 		id: playerId,
 		roleIndex: roleIndex,
 		role: ROLES[roleIndex].name,
 		color: ROLES[roleIndex].color,
-		micChannel: micChannel, // Auto-assigned microphone channel (0 or 1)
+		micChannel: micChannel, // Auto-assigned microphone channel based on player role (0 or 1)
 		ready: false,
 		response: "",
 	};
@@ -130,7 +130,9 @@ function handlePlayerJoin(ws, playerId, data) {
 	// Broadcast updated state to all players
 	broadcastState();
 
-	console.log(`✅ Player ${playerId} joined as ${player.role} with Mic Channel ${micChannel + 1}`);
+	console.log(
+		`✅ ${player.role} joined with Mic Channel ${micChannel + 1} (Player ${roleIndex + 1} → Mic ${micChannel + 1})`,
+	);
 }
 
 /**

@@ -76,7 +76,7 @@ async function handleJoined(player) {
 
 	// Auto-assign microphone channel
 	if (player.micChannel !== undefined) {
-		console.log(`🎤 Auto-assigning Mic Channel ${player.micChannel + 1}...`);
+		console.log(`🎤 Auto-assigning ${player.role} → Mic Channel ${player.micChannel + 1}...`);
 
 		// Initialize multi-channel audio
 		const success = await window.microphoneManager.init();
@@ -88,11 +88,11 @@ async function handleJoined(player) {
 			// Update microphone display
 			const micChannelDisplay = document.getElementById("micChannelDisplay");
 			if (micChannelDisplay) {
-				micChannelDisplay.textContent = `✓ Mic Channel ${player.micChannel + 1} Assigned`;
+				micChannelDisplay.textContent = `✓ ${player.role} → Mic ${player.micChannel + 1}`;
 				micChannelDisplay.style.color = "#4CAF50";
 				micChannelDisplay.style.fontWeight = "bold";
 			}
-			console.log(`✅ Mic Channel ${player.micChannel + 1} assigned successfully`);
+			console.log(`✅ ${player.role} assigned to Mic Channel ${player.micChannel + 1}`);
 		} else {
 			console.error("❌ Failed to initialize microphone");
 			const micChannelDisplay = document.getElementById("micChannelDisplay");
