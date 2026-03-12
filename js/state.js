@@ -12,3 +12,4 @@ let countdownSeconds = 0;
 let thinkingTimer = null;
 let thinkingSeconds = 0;
 let currentQuestionId = null; // Track when question changes
+let lastSpokenFeedback = null; // Track last spoken TTS feedback to prevent duplicates

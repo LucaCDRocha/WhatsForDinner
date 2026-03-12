@@ -112,6 +112,17 @@ async function analyzeResponses() {
 			if (elphiText) {
 				elphiText.textContent = data.feedback;
 				elphiMessage.classList.remove("hidden");
+
+				// Read Elphi subtitle with TTS only for Player 1 and only if it's new feedback
+				if (
+					typeof speak === "function" &&
+					data.feedback !== lastSpokenFeedback &&
+					playerData &&
+					playerData.roleIndex === 0
+				) {
+					speak(data.feedback, { interrupt: false });
+					lastSpokenFeedback = data.feedback;
+				}
 			}
 		} else {
 			throw new Error(data.error || "Failed to analyze responses");

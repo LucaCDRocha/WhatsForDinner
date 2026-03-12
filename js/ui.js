@@ -185,6 +185,9 @@ function updatePlayingScreen(state) {
 			currentQuestionId = state.question;
 			questionBox.textContent = state.question;
 
+			// Reset last spoken feedback for new question
+			lastSpokenFeedback = null;
+
 			// Hide Elphi message and reasoning section when new question appears
 			const elphiMessage = document.getElementById("elphiMessage");
 			if (elphiMessage) {
@@ -275,6 +278,17 @@ function updatePlayingScreen(state) {
 		if (elphiMessage && elphiText) {
 			elphiText.textContent = state.feedback;
 			elphiMessage.classList.remove("hidden");
+
+			// Read Elphi subtitle with TTS only for Player 1 and only if it's new feedback
+			if (
+				typeof speak === "function" &&
+				state.feedback !== lastSpokenFeedback &&
+				playerData &&
+				playerData.roleIndex === 0
+			) {
+				speak(state.feedback, { interrupt: false });
+				lastSpokenFeedback = state.feedback;
+			}
 		}
 	}
 }

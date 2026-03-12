@@ -6,7 +6,7 @@ const ttsConfig = {
 	pitch: 1.15, // Higher pitch sounds more upbeat
 	volume: 0.95,
 	preferredVoice: null,
-	enabled: false, // TTS disabled by default
+	enabled: true, // TTS enabled by default for Elphi subtitles
 };
 
 // Speech synthesis instance
