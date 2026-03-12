@@ -67,10 +67,23 @@ function initSpeechRecognition() {
 	recognition.onerror = (event) => {
 		console.error("Speech recognition error:", event.error);
 
-		// Handle "no-speech" error silently - it's expected when recording without speaking
+		// Handle "no-speech" error - restart recording automatically if we were listening
 		if (event.error === "no-speech") {
-			console.log("No speech detected - stopping recording silently");
-			stopSpeechRecognition();
+			console.log("No speech detected - restarting recording automatically");
+			// Don't call stopSpeechRecognition, just let it restart
+			if (isListening) {
+				// Small delay before restarting
+				setTimeout(() => {
+					if (isListening && recognition) {
+						try {
+							recognition.start();
+							console.log("Recording restarted after no-speech");
+						} catch (e) {
+							console.log("Could not restart recording:", e);
+						}
+					}
+				}, 100);
+			}
 			return;
 		}
 
