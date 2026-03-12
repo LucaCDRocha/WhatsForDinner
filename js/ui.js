@@ -185,11 +185,6 @@ function updatePlayingScreen(state) {
 		if (elphiMessage) {
 			elphiMessage.classList.add("hidden");
 		}
-
-		const aiReasoning = document.getElementById("aiReasoning");
-		if (aiReasoning) {
-			aiReasoning.classList.add("hidden");
-		}
 	}
 
 	// Update tension
@@ -247,7 +242,7 @@ function updatePlayingScreen(state) {
 		statusMessage.remove();
 	}
 
-	// Display AI feedback and reasoning when available
+	// Display AI feedback as Elphi subtitle
 	if (state.feedback) {
 		console.log("🎯 Displaying feedback from state:", state.feedback);
 
@@ -257,15 +252,6 @@ function updatePlayingScreen(state) {
 		if (elphiMessage && elphiText) {
 			elphiText.textContent = state.feedback;
 			elphiMessage.classList.remove("hidden");
-		}
-
-		// Show AI reasoning section
-		const aiReasoning = document.getElementById("aiReasoning");
-		const reasoningText = document.getElementById("reasoningText");
-		if (aiReasoning && reasoningText) {
-			reasoningText.textContent = state.feedback;
-			aiReasoning.classList.remove("hidden");
-			console.log("✅ AI Reasoning section displayed from state update");
 		}
 
 		// Remove "analyzing" status message if it exists

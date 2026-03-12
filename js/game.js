@@ -113,23 +113,6 @@ async function analyzeResponses() {
 				elphiText.textContent = data.feedback;
 				elphiMessage.classList.remove("hidden");
 			}
-
-			// Show reasoning section
-			const aiReasoning = document.getElementById("aiReasoning");
-			const reasoningText = document.getElementById("reasoningText");
-			console.log("AI Reasoning elements:", { aiReasoning, reasoningText, feedback: data.feedback });
-
-			if (aiReasoning && reasoningText && data.feedback) {
-				reasoningText.textContent = data.feedback;
-				aiReasoning.classList.remove("hidden");
-				console.log("✅ AI Reasoning section displayed");
-			} else {
-				console.error("Failed to display AI reasoning:", {
-					hasAiReasoning: !!aiReasoning,
-					hasReasoningText: !!reasoningText,
-					hasFeedback: !!data.feedback,
-				});
-			}
 		} else {
 			throw new Error(data.error || "Failed to analyze responses");
 		}
