@@ -106,16 +106,12 @@ async function analyzeResponses() {
 		if (data.success) {
 			console.log("✅ Analysis complete!", data);
 
-			// Show feedback briefly
+			// Show feedback (stays visible)
 			const elphiMessage = document.getElementById("elphiMessage");
 			const elphiText = elphiMessage.querySelector(".elphi-text");
 			if (elphiText) {
 				elphiText.textContent = data.feedback;
 				elphiMessage.classList.remove("hidden");
-
-				setTimeout(() => {
-					elphiMessage.classList.add("hidden");
-				}, 5000);
 			}
 
 			// Show reasoning section

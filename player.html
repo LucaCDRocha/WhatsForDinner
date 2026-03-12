@@ -668,12 +668,6 @@
 						<div class="elphi-text">No no no this is not good at all</div>
 					</div>
 
-					<!-- AI Reasoning Section -->
-					<div class="ai-reasoning hidden" id="aiReasoning">
-						<div class="reasoning-label">Why this response:</div>
-						<div class="reasoning-text" id="reasoningText">Waiting for AI analysis...</div>
-					</div>
-
 					<!-- Hidden textarea for voice input storage -->
 					<textarea id="answerInput" style="display: none"></textarea>
 
@@ -685,24 +679,26 @@
 							</div>
 						</div>
 					</div>
+
+					<!-- AI Reasoning Section -->
+					<div class="ai-reasoning hidden" id="aiReasoning">
+						<div class="reasoning-label">Why this response:</div>
+						<div class="reasoning-text" id="reasoningText">Waiting for AI analysis...</div>
+					</div>
 				</div>
 
 				<!-- Win Screen -->
 				<div id="winScreen" class="hidden">
-					<div class="card">
-						<h1>You win !</h1>
-						<div class="subtitle">You succeeded to lower the tension to 0</div>
-						<button class="button-success" onclick="resetGame()">Play Again</button>
-					</div>
+					<h1>You win !</h1>
+					<div class="subtitle">You succeeded to lower the tension to 0</div>
+					<button class="button-success" onclick="resetGame()">Play Again</button>
 				</div>
 
 				<!-- Lose Screen -->
 				<div id="loseScreen" class="hidden">
-					<div class="card">
-						<h1>Game over</h1>
-						<div class="subtitle">You lose, the tension was too high for the family</div>
-						<button class="button-danger" onclick="resetGame()">Try Again</button>
-					</div>
+					<h1>Game over</h1>
+					<div class="subtitle">You lose, the tension was too high for the family</div>
+					<button class="button-danger" onclick="resetGame()">Try Again</button>
 				</div>
 			</div>
 

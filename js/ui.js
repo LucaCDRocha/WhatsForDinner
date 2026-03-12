@@ -180,7 +180,12 @@ function updatePlayingScreen(state) {
 	if (questionBox && state.question) {
 		questionBox.textContent = state.question;
 
-		// Hide reasoning section when new question appears
+		// Hide Elphi message and reasoning section when new question appears
+		const elphiMessage = document.getElementById("elphiMessage");
+		if (elphiMessage) {
+			elphiMessage.classList.add("hidden");
+		}
+
 		const aiReasoning = document.getElementById("aiReasoning");
 		if (aiReasoning) {
 			aiReasoning.classList.add("hidden");
