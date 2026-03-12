@@ -191,10 +191,10 @@ function updatePlayingScreen(state) {
 				elphiMessage.classList.add("hidden");
 			}
 
-			// Turn-based system: Only Player 1 starts immediately with thinking time
-			// Player 2 will start recording immediately when Player 1 finishes
-			if (playerData && !playerData.response && playerData.roleIndex === 0) {
-				console.log("🎤 Player 1's turn to speak");
+			// Turn-based system: Both players start with thinking time
+			// Player 2 will wait for Player 1 after thinking time
+			if (playerData && !playerData.response) {
+				console.log(`🎤 ${playerData.roleIndex === 0 ? "Player 1" : "Player 2"} starting thinking time`);
 				startThinkingTimer();
 			}
 		}
@@ -311,10 +311,25 @@ function startThinkingTimer() {
 			// Update button
 			voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
 		} else {
-			// Thinking time is over, start recording automatically
+			// Thinking time is over
 			clearInterval(thinkingTimer);
 			thinkingTimer = null;
 
+			// Check if this is Player 2 and Player 1 hasn't answered yet
+			if (playerData && playerData.roleIndex === 1) {
+				const player1 = gameState.players.find((p) => p.roleIndex === 0);
+
+				if (player1 && !player1.response) {
+					// Player 1 hasn't answered yet - show waiting message
+					console.log(`⏳ ${playerRole}: Waiting for Player 1 to finish...`);
+					voiceRecordBtn.disabled = true;
+					voiceRecordBtn.innerHTML = "⏳ Waiting for Player 1...";
+					voiceRecordBtn.classList.remove("recording");
+					return; // Don't start recording yet
+				}
+			}
+
+			// Player 1 OR Player 2 (after Player 1 finished) - start recording
 			voiceRecordBtn.innerHTML = "🎤 Recording...";
 			voiceRecordBtn.classList.add("recording");
 
