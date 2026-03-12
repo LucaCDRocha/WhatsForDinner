@@ -208,27 +208,14 @@ function stopSpeechRecognition() {
  */
 function updateVoiceRecordButton(listening) {
 	const button = document.getElementById("voiceRecordBtn");
-	const timerDisplay = document.getElementById("timerDisplay");
-	const timerText = document.getElementById("timerText");
 
 	if (button) {
 		if (listening) {
 			button.innerHTML = "🔴 Recording...";
 			button.classList.add("recording");
-
-			// Update timer display
-			if (timerDisplay && timerText) {
-				timerDisplay.classList.remove("hidden");
-				timerText.innerHTML = "🔴 Recording... (will stop after 2s of silence once you speak)";
-			}
 		} else {
 			button.innerHTML = "🎤 Record";
 			button.classList.remove("recording");
-
-			// Hide timer display when not recording
-			if (timerDisplay) {
-				timerDisplay.classList.add("hidden");
-			}
 		}
 	}
 }

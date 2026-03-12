@@ -214,8 +214,6 @@ function updatePlayingScreen(state) {
 	// Check if player has already answered
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
 	const answerInput = document.getElementById("answerInput");
-	const timerDisplay = document.getElementById("timerDisplay");
-	const timerText = document.getElementById("timerText");
 
 	if (!voiceRecordBtn || !answerInput) {
 		console.error("Voice record button or answer input not found in DOM");
@@ -239,12 +237,6 @@ function updatePlayingScreen(state) {
 			voiceRecordBtn.disabled = true;
 			voiceRecordBtn.innerHTML = "⏳ Waiting for Player 1...";
 			voiceRecordBtn.classList.remove("recording");
-
-			// Show waiting message in timer display
-			if (timerDisplay && timerText) {
-				timerDisplay.classList.remove("hidden");
-				timerText.innerHTML = "⏳ Waiting for Player 1 to finish speaking...";
-			}
 		} else if (playerData.roleIndex === 1 && player1 && player1.response && !playerData.response) {
 			// Player 1 has answered, now it's Player 2's turn - start recording immediately
 			if (!thinkingTimer && !isListening) {
@@ -254,12 +246,6 @@ function updatePlayingScreen(state) {
 				voiceRecordBtn.disabled = false;
 				voiceRecordBtn.innerHTML = "🎤 Recording...";
 				voiceRecordBtn.classList.add("recording");
-
-				// Update timer display to show recording status
-				if (timerDisplay && timerText) {
-					timerDisplay.classList.remove("hidden");
-					timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
-				}
 
 				// Start recording immediately (no thinking time for Player 2)
 				setTimeout(() => {
@@ -332,19 +318,12 @@ function startThinkingTimer() {
 	thinkingSeconds = 10;
 
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
-	const timerDisplay = document.getElementById("timerDisplay");
-	const timerText = document.getElementById("timerText");
 
 	if (!voiceRecordBtn) return;
 
 	// Disable button and show countdown
 	voiceRecordBtn.disabled = true;
 	voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
-
-	// Hide timer display during thinking phase (only show during recording)
-	if (timerDisplay) {
-		timerDisplay.classList.add("hidden");
-	}
 
 	const playerRole = playerData ? (playerData.roleIndex === 0 ? "Player 1" : "Player 2") : "Player";
 	console.log(`🤔 ${playerRole}: Starting 10-second thinking timer...`);
@@ -364,11 +343,6 @@ function startThinkingTimer() {
 			voiceRecordBtn.innerHTML = "🎤 Recording...";
 			voiceRecordBtn.classList.add("recording");
 
-			// Update timer display to show recording status
-			if (timerText) {
-				timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
-			}
-
 			console.log(`✅ ${playerRole}: Thinking time over! Auto-starting recording...`);
 
 			// Auto-start voice recording
@@ -386,11 +360,5 @@ function stopThinkingTimer() {
 	if (thinkingTimer) {
 		clearInterval(thinkingTimer);
 		thinkingTimer = null;
-	}
-
-	// Hide timer display
-	const timerDisplay = document.getElementById("timerDisplay");
-	if (timerDisplay) {
-		timerDisplay.classList.add("hidden");
 	}
 }

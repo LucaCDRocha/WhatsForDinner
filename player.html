@@ -156,9 +156,6 @@
 			}
 
 			.voice-record-btn {
-				position: absolute;
-				bottom: 20px;
-				right: 30px;
 				background: #6b9bd1;
 				color: white;
 				border: none;
@@ -169,7 +166,9 @@
 				cursor: pointer;
 				transition: all 0.3s;
 				box-shadow: 0 6px 20px rgba(107, 155, 209, 0.4);
-				z-index: 10;
+				display: block;
+				margin: 20px auto;
+				width: auto;
 			}
 
 			.voice-record-btn:hover:not(:disabled) {
@@ -423,13 +422,6 @@
 					gap: 20px;
 				}
 
-				.voice-record-btn {
-					position: static;
-					display: block;
-					margin: 20px auto 0;
-					width: auto;
-				}
-
 				.card {
 					padding: 40px 30px;
 				}
@@ -654,32 +646,15 @@
 
 					<div class="question-container">
 						<div class="question-box" id="questionBox">What should they prioritize packing?</div>
-						<button
-							id="voiceRecordBtn"
-							class="voice-record-btn"
-							onclick="startVoiceAnswer()"
-							title="Click to record your answer">
-							🎤 Record
-						</button>
 					</div>
 
-					<!-- Timer display for thinking/recording phase -->
-					<div
-						id="timerDisplay"
-						class="hidden"
-						style="
-							text-align: center;
-							margin: 20px 0;
-							padding: 15px 30px;
-							background: #fff8e7;
-							border-radius: 20px;
-							font-size: 1.2rem;
-							font-weight: 600;
-							color: #000000;
-							box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-						">
-						<span id="timerText">⏳ Think & discuss: 10s</span>
-					</div>
+					<button
+						id="voiceRecordBtn"
+						class="voice-record-btn"
+						onclick="startVoiceAnswer()"
+						title="Click to record your answer">
+						🎤 Record
+					</button>
 
 					<div class="elphi-message hidden" id="elphiMessage">
 						<div class="elphi-label">Elphi subtitles</div>
