@@ -31,6 +31,14 @@ function connect() {
 				handleStateUpdate(message.state);
 				break;
 
+			case "start_thinking_timer":
+				// Player 1 TTS has completed, start thinking timer for all players
+				console.log("💬 Player 1 finished narration, starting thinking timer");
+				if (typeof startThinkingTimer === "function") {
+					startThinkingTimer();
+				}
+				break;
+
 			case "error":
 				console.error("⚠️ Server error:", message.message);
 				// Remove analyzing status if it exists

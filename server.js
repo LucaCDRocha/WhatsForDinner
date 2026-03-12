@@ -117,6 +117,12 @@ wss.on("connection", (ws) => {
 					handlePlayerAnswer(playerId, data.answer);
 					break;
 
+				case "tts_complete":
+					// Player 1 has finished reading Elphi subtitle, signal all players to start countdown
+					console.log("🔊 Player 1 TTS complete, signaling all players to start thinking timer");
+					broadcast({ type: "start_thinking_timer" });
+					break;
+
 				case "request_state":
 					ws.send(JSON.stringify({ type: "state_update", state: gameState }));
 					break;
@@ -484,6 +490,19 @@ function broadcastState() {
 		type: "state_update",
 		state: gameState,
 	});
+
+	players.forEach(({ ws }) => {
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.send(message);
+		}
+	});
+}
+
+/**
+ * Broadcast any message to all connected players
+ */
+function broadcast(messageObj) {
+	const message = JSON.stringify(messageObj);
 
 	players.forEach(({ ws }) => {
 		if (ws.readyState === WebSocket.OPEN) {

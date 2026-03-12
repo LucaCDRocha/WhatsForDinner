@@ -194,11 +194,15 @@ function updatePlayingScreen(state) {
 				elphiMessage.classList.add("hidden");
 			}
 
-			// Turn-based system: Both players start with thinking time
-			// Player 2 will wait for Player 1 after thinking time
-			if (playerData && !playerData.response) {
-				console.log(`🎤 ${playerData.roleIndex === 0 ? "Player 1" : "Player 2"} starting thinking time`);
+			// For new questions (without feedback), start thinking timer immediately
+			// BUT if there's feedback coming with this question, wait for TTS to complete first
+			if (playerData && !playerData.response && !state.feedback) {
+				console.log(
+					`🎤 New question for ${playerData.roleIndex === 0 ? "Player 1" : "Player 2"} - starting thinking timer`,
+				);
 				startThinkingTimer();
+			} else if (state.feedback) {
+				console.log("🔊 New question with feedback - waiting for narration before starting timer");
 			}
 		}
 	}
@@ -206,13 +210,6 @@ function updatePlayingScreen(state) {
 	// Update tension
 	const tensionValue = document.getElementById("tensionValue");
 	const tensionFill = document.getElementById("tensionFill");
-	const tensionText = document.getElementById("tensionText");
-
-	if (tensionValue && tensionFill && tensionText) {
-		tensionValue.textContent = state.tension;
-		tensionFill.style.width = `${state.tension}%`;
-		tensionText.textContent = `${state.tension}%`;
-	}
 
 	// Check if player has already answered
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
@@ -286,7 +283,41 @@ function updatePlayingScreen(state) {
 				playerData &&
 				playerData.roleIndex === 0
 			) {
-				speak(state.feedback, { interrupt: false });
+				console.log("🔊 Player 1: Starting TTS narration...");
+
+				// Update button to show narrating state
+				const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+				if (voiceRecordBtn) {
+					voiceRecordBtn.disabled = true;
+					voiceRecordBtn.innerHTML = "🔊 Narrating...";
+					voiceRecordBtn.classList.remove("recording");
+				}
+
+				speak(state.feedback, { interrupt: false })
+					.then(() => {
+						// TTS finished, signal server to start thinking timer for all players
+						console.log("✅ Player 1 TTS complete, signaling server");
+						if (ws && ws.readyState === WebSocket.OPEN) {
+							ws.send(JSON.stringify({ type: "tts_complete" }));
+						}
+					})
+					.catch((error) => {
+						console.error("TTS error:", error);
+						// If TTS fails, still signal to start timer
+						if (ws && ws.readyState === WebSocket.OPEN) {
+							ws.send(JSON.stringify({ type: "tts_complete" }));
+						}
+					});
+				lastSpokenFeedback = state.feedback;
+			} else if (state.feedback !== lastSpokenFeedback && playerData && playerData.roleIndex !== 0) {
+				// For Player 2, update button to wait for Player 1's narration
+				console.log("⏳ Player 2: Waiting for Player 1's narration...");
+				const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+				if (voiceRecordBtn) {
+					voiceRecordBtn.disabled = true;
+					voiceRecordBtn.innerHTML = "🔊 Waiting for narrator...";
+					voiceRecordBtn.classList.remove("recording");
+				}
 				lastSpokenFeedback = state.feedback;
 			}
 		}

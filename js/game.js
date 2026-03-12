@@ -120,7 +120,41 @@ async function analyzeResponses() {
 					playerData &&
 					playerData.roleIndex === 0
 				) {
-					speak(data.feedback, { interrupt: false });
+					console.log("🔊 Player 1: Starting TTS narration (from analysis)...");
+
+					// Update button to show narrating state
+					const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+					if (voiceRecordBtn) {
+						voiceRecordBtn.disabled = true;
+						voiceRecordBtn.innerHTML = "🔊 Narrating...";
+						voiceRecordBtn.classList.remove("recording");
+					}
+
+					speak(data.feedback, { interrupt: false })
+						.then(() => {
+							// TTS finished, signal server to start thinking timer for all players
+							console.log("✅ Player 1 TTS complete (from analysis), signaling server");
+							if (ws && ws.readyState === WebSocket.OPEN) {
+								ws.send(JSON.stringify({ type: "tts_complete" }));
+							}
+						})
+						.catch((error) => {
+							console.error("TTS error:", error);
+							// If TTS fails, still signal to start timer
+							if (ws && ws.readyState === WebSocket.OPEN) {
+								ws.send(JSON.stringify({ type: "tts_complete" }));
+							}
+						});
+					lastSpokenFeedback = data.feedback;
+				} else if (data.feedback !== lastSpokenFeedback && playerData && playerData.roleIndex !== 0) {
+					// For Player 2, update button to wait for Player 1's narration
+					console.log("⏳ Player 2: Waiting for Player 1's narration (from analysis)...");
+					const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+					if (voiceRecordBtn) {
+						voiceRecordBtn.disabled = true;
+						voiceRecordBtn.innerHTML = "🔊 Waiting for narrator...";
+						voiceRecordBtn.classList.remove("recording");
+					}
 					lastSpokenFeedback = data.feedback;
 				}
 			}

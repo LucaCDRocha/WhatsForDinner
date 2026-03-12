@@ -143,6 +143,8 @@ function speak(text, options = {}) {
 			utterance.voice = ttsConfig.preferredVoice;
 		}
 
+		let hasResolved = false;
+
 		// Event handlers
 		utterance.onstart = () => {
 			isSpeaking = true;
@@ -150,15 +152,53 @@ function speak(text, options = {}) {
 		};
 
 		utterance.onend = () => {
-			isSpeaking = false;
-			console.log("✅ Speech completed");
-			resolve();
+			console.log("📢 Speech onend event fired");
+
+			// Wait a bit and verify speech is actually complete
+			// This handles browser issues where onend fires prematurely
+			setTimeout(() => {
+				// Double-check synthesis has stopped
+				if (!synthesis.speaking && !synthesis.pending && !hasResolved) {
+					isSpeaking = false;
+					hasResolved = true;
+					console.log("✅ Speech actually completed");
+					resolve();
+				} else {
+					console.log("⚠️ Speech still in progress, waiting...");
+					// Check again in 200ms
+					const checkComplete = setInterval(() => {
+						if (!synthesis.speaking && !synthesis.pending) {
+							clearInterval(checkComplete);
+							if (!hasResolved) {
+								isSpeaking = false;
+								hasResolved = true;
+								console.log("✅ Speech finally completed");
+								resolve();
+							}
+						}
+					}, 200);
+
+					// Safety timeout after 10 seconds
+					setTimeout(() => {
+						clearInterval(checkComplete);
+						if (!hasResolved) {
+							isSpeaking = false;
+							hasResolved = true;
+							console.log("⏱️ Speech timeout - forcing completion");
+							resolve();
+						}
+					}, 10000);
+				}
+			}, 100); // Initial delay to let audio finish
 		};
 
 		utterance.onerror = (event) => {
 			isSpeaking = false;
-			console.error("Speech error:", event.error);
-			reject(event);
+			if (!hasResolved) {
+				hasResolved = true;
+				console.error("Speech error:", event.error);
+				reject(event);
+			}
 		};
 
 		// Speak
