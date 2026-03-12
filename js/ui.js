@@ -265,26 +265,6 @@ function updatePlayingScreen(state) {
 	}
 	// If thinking timer or recording is active, don't change button state
 
-	// Show status message when all players have answered (auto-analysis will happen)
-	const allAnswered = state.players.every((p) => p.response && p.response.trim() !== "");
-	let statusMessage = document.getElementById("autoAnalysisStatus");
-
-	if (allAnswered && !statusMessage) {
-		// Create status message after the elphi message
-		statusMessage = document.createElement("div");
-		statusMessage.id = "autoAnalysisStatus";
-		statusMessage.style.cssText =
-			"margin: 30px auto; padding: 20px 40px; background: linear-gradient(135deg, #6B9BD1 0%, #5A8BC1 100%); color: white; border-radius: 20px; font-size: 1.3rem; font-weight: 600; text-align: center; box-shadow: 0 10px 30px rgba(107, 155, 209, 0.5); max-width: 600px;";
-		statusMessage.innerHTML =
-			'<span style="font-size: 1.5rem;">🤖</span> All answers received! Analyzing responses...';
-		const elphiMessage = document.getElementById("elphiMessage");
-		if (elphiMessage && elphiMessage.parentElement) {
-			elphiMessage.parentElement.insertBefore(statusMessage, elphiMessage.nextSibling);
-		}
-	} else if (!allAnswered && statusMessage) {
-		statusMessage.remove();
-	}
-
 	// Display AI feedback as Elphi subtitle
 	if (state.feedback) {
 		console.log("🎯 Displaying feedback from state:", state.feedback);
@@ -295,11 +275,6 @@ function updatePlayingScreen(state) {
 		if (elphiMessage && elphiText) {
 			elphiText.textContent = state.feedback;
 			elphiMessage.classList.remove("hidden");
-		}
-
-		// Remove "analyzing" status message if it exists
-		if (statusMessage) {
-			statusMessage.remove();
 		}
 	}
 }
