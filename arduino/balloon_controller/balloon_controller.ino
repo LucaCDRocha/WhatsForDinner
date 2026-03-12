@@ -38,15 +38,22 @@ const int STEPS_FOR_90_DEGREES = stepsPerRevolution / 4;  // 512/4 = 128 steps f
 
 // State tracking
 enum BalloonState {
+  INITIALIZING,  // New state for startup sequence
   IDLE,
   INFLATING,
   DEFLATING
 };
-BalloonState currentState = IDLE;
+BalloonState currentState = INITIALIZING;
 
 // Timing
 const int UPDATE_INTERVAL = 100;  // Check for updates every 100ms
 unsigned long lastUpdate = 0;
+
+// Initialization parameters
+const unsigned long DEFLATION_TIME = 10000;  // 10 seconds to fully deflate
+const int INITIAL_TENSION = 50;  // Target tension after initialization
+unsigned long initializationStartTime = 0;
+bool valveOpenedForInit = false;
 
 void setup() {
   Serial.begin(9600);
@@ -58,30 +65,45 @@ void setup() {
   pinMode(pinRelay, OUTPUT);
   digitalWrite(pinRelay, HIGH);  // Pump OFF initially (active LOW relay)
   
-  // Ensure valve is at closed position (0°)
-  currentValveAngle = VALVE_CLOSED;
+  // Safety initialization: Open valve for extended deflation
+  currentValveAngle = VALVE_CLOSED;  // Initialize as closed
+  openValve();  // Open valve to 90° for safety deflation
+  currentTension = 0;  // Set tension to 0 since we're deflating
+  targetTension = INITIAL_TENSION;  // Will inflate to this after deflation
   
-  Serial.println("Balloon Controller Ready!");
-  Serial.println("Send: TENSION:<0-100>");
-  Serial.println("Valve at 0° (CLOSED), Pump OFF");
+  // Record start time for initialization
+  initializationStartTime = millis();
+  valveOpenedForInit = true;
+  currentState = INITIALIZING;
+  
+  Serial.println("=== SAFETY INITIALIZATION ===");
+  Serial.println("Opening valve for safety deflation...");
+  Serial.print("Will deflate for ");
+  Serial.print(DEFLATION_TIME / 1000);
+  Serial.println(" seconds");
 }
 
 void loop() {
-  // Check for serial commands
+  // Check for serial commands (only process if initialization is complete)
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
     command.trim();
     
     if (command.startsWith("TENSION:")) {
-      int newTension = command.substring(8).toInt();
-      
-      // Validate tension range
-      if (newTension >= MIN_TENSION && newTension <= MAX_TENSION) {
-        targetTension = newTension;
-        Serial.print("Target tension set to: ");
-        Serial.println(targetTension);
+      // Don't accept commands during initialization
+      if (currentState == INITIALIZING) {
+        Serial.println("ERROR: Still initializing, please wait...");
       } else {
-        Serial.println("ERROR: Tension must be 0-100");
+        int newTension = command.substring(8).toInt();
+        
+        // Validate tension range
+        if (newTension >= MIN_TENSION && newTension <= MAX_TENSION) {
+          targetTension = newTension;
+          Serial.print("Target tension set to: ");
+          Serial.println(targetTension);
+        } else {
+          Serial.println("ERROR: Tension must be 0-100");
+        }
       }
     }
   }
@@ -97,6 +119,42 @@ void loop() {
  * Update balloon inflation/deflation based on current vs target tension
  */
 void updateBalloon() {
+  // Handle initialization sequence
+  if (currentState == INITIALIZING) {
+    unsigned long elapsedTime = millis() - initializationStartTime;
+    
+    if (elapsedTime < DEFLATION_TIME) {
+      // Still deflating - valve is open, pump is off
+      // Just wait for the deflation period to complete
+      return;
+    } else if (valveOpenedForInit) {
+      // Deflation time complete - close valve and prepare to inflate
+      closeValve();
+      valveOpenedForInit = false;
+      Serial.println("Safety deflation complete!");
+      Serial.println("Closing valve and starting inflation to initial tension...");
+      Serial.print("Target: ");
+      Serial.println(targetTension);
+      // Don't change state yet - let the inflation begin below
+    }
+    
+    // Now start inflating to initial tension
+    if (currentTension < targetTension) {
+      digitalWrite(pinRelay, LOW);  // Turn pump ON
+      inflateStep();
+      return;
+    } else {
+      // Initial inflation complete - ready for operation
+      digitalWrite(pinRelay, HIGH);  // Turn pump OFF
+      currentState = IDLE;
+      Serial.println("=== INITIALIZATION COMPLETE ===");
+      Serial.println("Balloon Controller Ready!");
+      Serial.println("Send: TENSION:<0-100>");
+      return;
+    }
+  }
+  
+  // Normal operation below
   if (currentTension == targetTension) {
     // Target reached - go to IDLE state
     if (currentState != IDLE) {
