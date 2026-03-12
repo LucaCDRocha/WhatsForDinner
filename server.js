@@ -85,6 +85,7 @@ let gameState = {
 	tension: 50,
 	round: 0,
 	responses: [],
+	feedback: "", // Elphi narrator feedback
 };
 
 const ROLES = [
@@ -429,40 +430,56 @@ function handlePlayerDisconnect(playerId) {
 	const playerData = players.get(playerId);
 	if (!playerData) return;
 
+	console.log(`⚠️ Player ${playerId} (${playerData.player.role}) disconnected - resetting game for all players`);
+
 	// Remove from players map
 	players.delete(playerId);
 
 	// Remove from game state
 	gameState.players = gameState.players.filter((p) => p.id !== playerId);
 
-	// If game was in progress, reset
-	if (gameState.status !== "waiting") {
-		resetGame();
-	}
+	// Always reset game when a player disconnects to ensure clean state
+	// This sends all remaining players back to the waiting screen
+	resetGame();
 
 	broadcastState();
+
+	console.log(`✅ Game reset. ${gameState.players.length} player(s) remaining`);
 }
 
 /**
  * Reset game state
+ * Clears all game data including conversation history and sends all players back to waiting screen
  */
 function resetGame() {
+	console.log("🔄 Resetting game state...");
+
+	// Reset game status
 	gameState.status = "waiting";
 	gameState.scenario = "";
 	gameState.generalContext = "";
 	gameState.question = "";
 	gameState.tension = 50;
 	gameState.round = 0;
+	gameState.feedback = ""; // Clear Elphi subtitle/narrator feedback
+
+	// Clear conversation history (responses array)
 	gameState.responses = [];
 
 	// Reset Arduino balloon to middle position
 	sendTensionToArduino(50);
 
-	// Reset player ready states
+	// Reset all player states completely
 	gameState.players.forEach((p) => {
 		p.ready = false;
 		p.response = "";
+		// Clear assigned roles and situations from previous game
+		delete p.assignedRole;
+		delete p.age;
+		delete p.situation;
 	});
+
+	console.log("✅ Game state reset complete - all players sent to waiting screen");
 }
 
 /**

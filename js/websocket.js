@@ -131,6 +131,11 @@ function handleStateUpdate(state) {
 	gameState = state;
 	console.log("📊 State updated:", state);
 
+	// If game is reset to waiting, clean up all client states
+	if (state.status === "waiting") {
+		resetAllClientStates();
+	}
+
 	// Update player data from state if we have an ID
 	if (playerId) {
 		const updatedPlayerData = state.players.find((p) => p.id === playerId);
@@ -166,6 +171,69 @@ function handleStateUpdate(state) {
 			readyBtn.style.background = "#4CAF50";
 		}
 	}
+}
+
+/**
+ * Reset all client-side states when returning to waiting screen
+ * This ensures a clean slate when a player disconnects or game resets
+ */
+function resetAllClientStates() {
+	console.log("🔄 Resetting all client states...");
+
+	// Stop all timers
+	if (countdownTimer) {
+		clearInterval(countdownTimer);
+		countdownTimer = null;
+	}
+	if (thinkingTimer) {
+		clearInterval(thinkingTimer);
+		thinkingTimer = null;
+	}
+
+	// Stop speech recognition if active
+	if (typeof stopSpeechRecognition === "function") {
+		stopSpeechRecognition();
+	}
+
+	// Stop TTS if speaking
+	if (typeof stopSpeaking === "function") {
+		stopSpeaking();
+	}
+
+	// Reset state variables
+	currentQuestionId = null;
+	lastSpokenFeedback = null;
+	countdownSeconds = 0;
+	thinkingSeconds = 0;
+
+	// Reset UI elements
+	const answerInput = document.getElementById("answerInput");
+	if (answerInput) {
+		answerInput.value = "";
+	}
+
+	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+	if (voiceRecordBtn) {
+		voiceRecordBtn.disabled = false;
+		voiceRecordBtn.innerHTML = "🎤 Record";
+		voiceRecordBtn.classList.remove("recording");
+	}
+
+	const elphiMessage = document.getElementById("elphiMessage");
+	if (elphiMessage) {
+		elphiMessage.classList.add("hidden");
+		const elphiText = elphiMessage.querySelector(".elphi-text");
+		if (elphiText) {
+			elphiText.textContent = "";
+		}
+	}
+
+	const countdownBox = document.getElementById("countdownBox");
+	if (countdownBox) {
+		countdownBox.textContent = "... Waiting for people to join";
+	}
+
+	console.log("✅ All client states reset");
 }
 
 /**

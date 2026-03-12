@@ -134,6 +134,15 @@ function updateGameUI(state) {
 			body.className = state.status;
 			welcomeScreen.classList.remove("hidden");
 			if (gameCard) gameCard.classList.add("hidden");
+			// Clear Elphi message when returning to waiting screen
+			const elphiMessage = document.getElementById("elphiMessage");
+			if (elphiMessage) {
+				elphiMessage.classList.add("hidden");
+				const elphiText = elphiMessage.querySelector(".elphi-text");
+				if (elphiText) {
+					elphiText.textContent = "";
+				}
+			}
 			break;
 
 		case "playing":
