@@ -178,12 +178,23 @@ function updatePlayingScreen(state) {
 	// Update question
 	const questionBox = document.getElementById("questionBox");
 	if (questionBox && state.question) {
-		questionBox.textContent = state.question;
+		// Check if this is a new question
+		const isNewQuestion = currentQuestionId !== state.question;
 
-		// Hide Elphi message and reasoning section when new question appears
-		const elphiMessage = document.getElementById("elphiMessage");
-		if (elphiMessage) {
-			elphiMessage.classList.add("hidden");
+		if (isNewQuestion) {
+			currentQuestionId = state.question;
+			questionBox.textContent = state.question;
+
+			// Hide Elphi message and reasoning section when new question appears
+			const elphiMessage = document.getElementById("elphiMessage");
+			if (elphiMessage) {
+				elphiMessage.classList.add("hidden");
+			}
+
+			// Start thinking timer for new question (only if player hasn't answered)
+			if (playerData && !playerData.response) {
+				startThinkingTimer();
+			}
 		}
 	}
 
@@ -208,11 +219,14 @@ function updatePlayingScreen(state) {
 	}
 
 	if (playerData && playerData.response) {
+		// Player has already answered - stop any timers and lock button
+		stopThinkingTimer();
 		voiceRecordBtn.disabled = true;
 		voiceRecordBtn.innerHTML = "✓ Answer Submitted";
 		voiceRecordBtn.classList.remove("recording");
 		answerInput.value = playerData.response;
-	} else {
+	} else if (!thinkingTimer && !isListening) {
+		// Only reset button if no timer is running and not currently recording
 		voiceRecordBtn.disabled = false;
 		voiceRecordBtn.innerHTML = "🎤 Record";
 		voiceRecordBtn.classList.remove("recording");
@@ -221,6 +235,7 @@ function updatePlayingScreen(state) {
 			answerInput.value = "";
 		}
 	}
+	// If thinking timer or recording is active, don't change button state
 
 	// Show status message when all players have answered (auto-analysis will happen)
 	const allAnswered = state.players.every((p) => p.response && p.response.trim() !== "");
@@ -258,5 +273,88 @@ function updatePlayingScreen(state) {
 		if (statusMessage) {
 			statusMessage.remove();
 		}
+	}
+}
+
+/**
+ * Start the 10-second thinking timer before recording starts
+ */
+function startThinkingTimer() {
+	// Clear any existing thinking timer
+	if (thinkingTimer) {
+		clearInterval(thinkingTimer);
+		thinkingTimer = null;
+	}
+
+	// Set thinking time to 10 seconds
+	thinkingSeconds = 10;
+
+	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
+	const timerDisplay = document.getElementById("timerDisplay");
+	const timerText = document.getElementById("timerText");
+
+	if (!voiceRecordBtn) return;
+
+	// Disable button and show countdown
+	voiceRecordBtn.disabled = true;
+	voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
+
+	// Show timer display
+	if (timerDisplay) {
+		timerDisplay.classList.remove("hidden");
+		if (timerText) {
+			timerText.textContent = `⏳ Think & discuss: ${thinkingSeconds}s`;
+		}
+	}
+
+	console.log("🤔 Starting 10-second thinking timer...");
+
+	// Start countdown
+	thinkingTimer = setInterval(() => {
+		thinkingSeconds--;
+
+		if (thinkingSeconds > 0) {
+			// Update button
+			voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
+			// Update timer display
+			if (timerText) {
+				timerText.textContent = `⏳ Think & discuss: ${thinkingSeconds}s`;
+			}
+		} else {
+			// Thinking time is over, start recording automatically
+			clearInterval(thinkingTimer);
+			thinkingTimer = null;
+
+			voiceRecordBtn.innerHTML = "🎤 Recording...";
+			voiceRecordBtn.classList.add("recording");
+
+			// Update timer display to show recording status
+			if (timerText) {
+				timerText.innerHTML = "🔴 Recording... (stops after 5s of silence)";
+			}
+
+			console.log("✅ Thinking time over! Auto-starting recording...");
+
+			// Auto-start voice recording
+			setTimeout(() => {
+				startVoiceAnswer();
+			}, 500);
+		}
+	}, 1000);
+}
+
+/**
+ * Stop the thinking timer if it's running
+ */
+function stopThinkingTimer() {
+	if (thinkingTimer) {
+		clearInterval(thinkingTimer);
+		thinkingTimer = null;
+	}
+
+	// Hide timer display
+	const timerDisplay = document.getElementById("timerDisplay");
+	if (timerDisplay) {
+		timerDisplay.classList.add("hidden");
 	}
 }

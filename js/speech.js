@@ -5,6 +5,11 @@ let recognition = null;
 let isListening = false;
 let originalText = ""; // Store original text before starting recognition
 
+// Silence detection variables
+let silenceTimer = null;
+let lastSpeechTime = 0;
+const SILENCE_DURATION = 5000; // 5 seconds of silence to auto-stop
+
 /**
  * Initialize speech recognition
  */
@@ -17,7 +22,7 @@ function initSpeechRecognition() {
 	}
 
 	recognition = new SpeechRecognition();
-	recognition.continuous = false; // Stop after user finishes speaking
+	recognition.continuous = true; // Keep listening for continuous input
 	recognition.interimResults = true; // Show partial results while speaking
 	recognition.lang = "en-US"; // Set language
 
@@ -25,6 +30,10 @@ function initSpeechRecognition() {
 	recognition.onresult = (event) => {
 		let interimTranscript = "";
 		let finalTranscript = "";
+
+		// Update last speech time (user is speaking)
+		lastSpeechTime = Date.now();
+		resetSilenceTimer();
 
 		// Process all results from the current recognition session
 		for (let i = 0; i < event.results.length; i++) {
@@ -72,16 +81,19 @@ function initSpeechRecognition() {
 	// Handle speech recognition end
 	recognition.onend = () => {
 		console.log("Speech recognition ended.");
-		stopSpeechRecognition();
+		clearSilenceTimer();
 
-		// Auto-submit the answer if we have text
+		// Only auto-submit if we have text and stopped due to silence
 		const textarea = document.getElementById("answerInput");
-		if (textarea && textarea.value && textarea.value.trim() !== "") {
+		if (isListening && textarea && textarea.value && textarea.value.trim() !== "") {
 			console.log("Auto-submitting voice answer:", textarea.value);
+			stopSpeechRecognition();
 			// Small delay to ensure UI updates
 			setTimeout(() => {
 				submitAnswer();
 			}, 500);
+		} else {
+			stopSpeechRecognition();
 		}
 	};
 
@@ -133,6 +145,8 @@ function startSpeechRecognition() {
  * Stop speech recognition
  */
 function stopSpeechRecognition() {
+	clearSilenceTimer();
+
 	if (recognition && isListening) {
 		try {
 			recognition.stop();
@@ -151,13 +165,27 @@ function stopSpeechRecognition() {
  */
 function updateVoiceRecordButton(listening) {
 	const button = document.getElementById("voiceRecordBtn");
+	const timerDisplay = document.getElementById("timerDisplay");
+	const timerText = document.getElementById("timerText");
+
 	if (button) {
 		if (listening) {
 			button.innerHTML = "🔴 Recording...";
 			button.classList.add("recording");
+
+			// Update timer display
+			if (timerDisplay && timerText) {
+				timerDisplay.classList.remove("hidden");
+				timerText.innerHTML = "🔴 Recording... (stops after 5s of silence)";
+			}
 		} else {
 			button.innerHTML = "🎤 Record";
 			button.classList.remove("recording");
+
+			// Hide timer display when not recording
+			if (timerDisplay) {
+				timerDisplay.classList.add("hidden");
+			}
 		}
 	}
 }
@@ -169,7 +197,7 @@ function startVoiceAnswer() {
 	const button = document.getElementById("voiceRecordBtn");
 
 	// Check if already answered
-	if (button && button.disabled) {
+	if (button && button.innerHTML.includes("Answer Submitted")) {
 		return;
 	}
 
@@ -205,8 +233,15 @@ function startVoiceAnswer() {
 		originalText = "";
 	}
 
+	// Enable the button (in case it was disabled by thinking timer)
+	if (button) {
+		button.disabled = false;
+	}
+
 	try {
 		recognition.start();
+		lastSpeechTime = Date.now(); // Initialize speech timer
+		resetSilenceTimer(); // Start silence detection
 		console.log("Started voice recording for answer");
 	} catch (error) {
 		console.error("Error starting voice recording:", error);
@@ -226,4 +261,38 @@ function updateMicrophoneButton(listening) {
  */
 function isSpeechRecognitionSupported() {
 	return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+/**
+ * Start silence detection timer
+ */
+function resetSilenceTimer() {
+	clearSilenceTimer();
+
+	silenceTimer = setTimeout(() => {
+		const timeSinceLastSpeech = Date.now() - lastSpeechTime;
+
+		if (timeSinceLastSpeech >= SILENCE_DURATION && isListening) {
+			console.log(`🔇 ${SILENCE_DURATION / 1000} seconds of silence detected, stopping recording...`);
+			stopSpeechRecognition();
+
+			// Auto-submit if we have content
+			const textarea = document.getElementById("answerInput");
+			if (textarea && textarea.value && textarea.value.trim() !== "") {
+				setTimeout(() => {
+					submitAnswer();
+				}, 500);
+			}
+		}
+	}, SILENCE_DURATION);
+}
+
+/**
+ * Clear silence detection timer
+ */
+function clearSilenceTimer() {
+	if (silenceTimer) {
+		clearTimeout(silenceTimer);
+		silenceTimer = null;
+	}
 }
