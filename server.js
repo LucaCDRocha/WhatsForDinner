@@ -79,6 +79,13 @@ wss.on("connection", (ws) => {
  * Handle player joining
  */
 function handlePlayerJoin(ws, playerId, data) {
+	// Only allow 2 players
+	if (gameState.players.length >= 2) {
+		ws.send(JSON.stringify({ type: "error", message: "Game is full (2 players max)" }));
+		ws.close();
+		return;
+	}
+
 	// Find available role
 	const assignedRoles = gameState.players.map((p) => p.roleIndex);
 	let roleIndex = -1;
@@ -91,16 +98,20 @@ function handlePlayerJoin(ws, playerId, data) {
 	}
 
 	if (roleIndex === -1) {
-		ws.send(JSON.stringify({ type: "error", message: "Game is full (4 players max)" }));
+		ws.send(JSON.stringify({ type: "error", message: "Game is full (2 players max)" }));
 		ws.close();
 		return;
 	}
+
+	// Auto-assign microphone channel: first player = channel 0, second player = channel 1
+	const micChannel = gameState.players.length; // 0 for first player, 1 for second player
 
 	const player = {
 		id: playerId,
 		roleIndex: roleIndex,
 		role: ROLES[roleIndex].name,
 		color: ROLES[roleIndex].color,
+		micChannel: micChannel, // Auto-assigned microphone channel (0 or 1)
 		ready: false,
 		response: "",
 	};
@@ -119,7 +130,7 @@ function handlePlayerJoin(ws, playerId, data) {
 	// Broadcast updated state to all players
 	broadcastState();
 
-	console.log(`✅ Player ${playerId} joined as ${player.role}`);
+	console.log(`✅ Player ${playerId} joined as ${player.role} with Mic Channel ${micChannel + 1}`);
 }
 
 /**
@@ -142,12 +153,12 @@ function handlePlayerReady(playerId, readyState) {
 		`${playerData.player.ready ? "✓" : "✗"} Player ${playerId} is ${playerData.player.ready ? "ready" : "not ready"}`,
 	);
 
-	// Check if 2-4 players are ready
+	// Check if both players are ready
 	const readyCount = gameState.players.filter((p) => p.ready).length;
 
-	if (readyCount >= 2 && readyCount <= 4 && gameState.status === "waiting") {
+	if (readyCount === 2 && gameState.status === "waiting") {
 		gameState.status = "ready";
-		console.log(`🎮 ${readyCount} players ready! Game can start.`);
+		console.log(`🎮 Both players ready! Game can start.`);
 	} else if (readyCount < 2 && gameState.status === "ready") {
 		gameState.status = "waiting";
 		console.log(`⏸️ Only ${readyCount} player(s) ready. Waiting for more...`);
@@ -421,10 +432,10 @@ function broadcastState() {
  * Start game (generate scenario)
  */
 app.post("/api/start", express.json(), async (req, res) => {
-	// Check if 2-4 players are ready
+	// Check if both players are ready
 	const readyCount = gameState.players.filter((p) => p.ready).length;
-	if (readyCount < 2 || readyCount > 4) {
-		return res.status(400).json({ error: `Not enough players ready (${readyCount}/2-4)` });
+	if (readyCount !== 2) {
+		return res.status(400).json({ error: `Need exactly 2 players ready (${readyCount}/2)` });
 	}
 
 	try {

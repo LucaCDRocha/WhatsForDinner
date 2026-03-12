@@ -10,8 +10,8 @@ function updateCountdown(state) {
 	const playerCount = state.players.length;
 	const readyCount = state.players.filter((p) => p.ready).length;
 
-	// Check if we should start countdown (2-4 players ready, and not already playing)
-	if ((state.status === "waiting" || state.status === "ready") && readyCount >= 2 && readyCount <= 4) {
+	// Check if we should start countdown (both players ready, and not already playing)
+	if ((state.status === "waiting" || state.status === "ready") && readyCount === 2) {
 		// Start countdown if not already running
 		if (!countdownTimer) {
 			countdownSeconds = COUNTDOWN_DURATION;
@@ -27,12 +27,12 @@ function updateCountdown(state) {
 		// Update message based on ready count
 		if (playerCount === 0) {
 			countdownBox.textContent = "... Waiting for people to join";
+		} else if (playerCount === 1) {
+			countdownBox.textContent = `... Waiting for second player to join (${playerCount}/2 joined)`;
 		} else if (readyCount < 2) {
-			countdownBox.textContent = `... Waiting for players to be ready (${readyCount}/${playerCount} ready, need 2 minimum)`;
-		} else if (playerCount > 4) {
-			countdownBox.textContent = "Game is full (4/4 players)";
-		} else {
-			countdownBox.textContent = `... Waiting for players (${playerCount}/4 joined, ${readyCount} ready)`;
+			countdownBox.textContent = `... Waiting for both players to be ready (${readyCount}/2 ready)`;
+		} else if (playerCount > 2) {
+			countdownBox.textContent = "Game is full (2/2 players)";
 		}
 	}
 }

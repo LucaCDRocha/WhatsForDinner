@@ -58,10 +58,10 @@ function connect() {
 /**
  * Handle joined message from server
  */
-function handleJoined(player) {
+async function handleJoined(player) {
 	playerData = player;
 	playerId = player.id;
-	console.log(`✅ Joined as ${player.role}`, player);
+	console.log(`✅ Joined as ${player.role} with Mic Channel ${player.micChannel + 1}`, player);
 
 	// Check if this is the first player (control panel)
 	isControlPanel = player.roleIndex === 0;
@@ -74,12 +74,33 @@ function handleJoined(player) {
 		roleBadge.style.background = player.color;
 	}
 
-	// Update microphone display with player number
-	const micChannelDisplay = document.getElementById("micChannelDisplay");
-	if (micChannelDisplay && playerId) {
-		micChannelDisplay.textContent = `Player ${playerId} → Use Mic ${playerId}`;
-		micChannelDisplay.style.color = "#000";
-		micChannelDisplay.style.fontWeight = "bold";
+	// Auto-assign microphone channel
+	if (player.micChannel !== undefined) {
+		console.log(`🎤 Auto-assigning Mic Channel ${player.micChannel + 1}...`);
+
+		// Initialize multi-channel audio
+		const success = await window.microphoneManager.init();
+
+		if (success) {
+			// Assign the designated channel
+			window.microphoneManager.assignChannel(player.micChannel);
+
+			// Update microphone display
+			const micChannelDisplay = document.getElementById("micChannelDisplay");
+			if (micChannelDisplay) {
+				micChannelDisplay.textContent = `✓ Mic Channel ${player.micChannel + 1} Assigned`;
+				micChannelDisplay.style.color = "#4CAF50";
+				micChannelDisplay.style.fontWeight = "bold";
+			}
+			console.log(`✅ Mic Channel ${player.micChannel + 1} assigned successfully`);
+		} else {
+			console.error("❌ Failed to initialize microphone");
+			const micChannelDisplay = document.getElementById("micChannelDisplay");
+			if (micChannelDisplay) {
+				micChannelDisplay.textContent = `❌ Mic initialization failed - check permissions`;
+				micChannelDisplay.style.color = "#f44336";
+			}
+		}
 	}
 
 	// Update ready button state
