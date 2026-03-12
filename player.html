@@ -348,6 +348,33 @@
 				color: #000000;
 			}
 
+			.ai-reasoning {
+				background: #f0f8ff;
+				border-radius: 15px;
+				padding: 20px 30px;
+				margin: 20px auto;
+				max-width: 800px;
+				text-align: left;
+				box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+				border-left: 4px solid #6b9bd1;
+			}
+
+			.reasoning-label {
+				font-size: 0.9rem;
+				font-weight: 700;
+				color: #6b9bd1;
+				margin-bottom: 8px;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			.reasoning-text {
+				font-size: 1.1rem;
+				font-weight: 400;
+				color: #2d3436;
+				line-height: 1.6;
+			}
+
 			.hidden {
 				display: none !important;
 			}
@@ -639,6 +666,12 @@
 					<div class="elphi-message hidden" id="elphiMessage">
 						<div class="elphi-label">Elphi subtitles</div>
 						<div class="elphi-text">No no no this is not good at all</div>
+					</div>
+
+					<!-- AI Reasoning Section -->
+					<div class="ai-reasoning hidden" id="aiReasoning">
+						<div class="reasoning-label">Why this response:</div>
+						<div class="reasoning-text" id="reasoningText">Waiting for AI analysis...</div>
 					</div>
 
 					<!-- Hidden textarea for voice input storage -->

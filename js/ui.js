@@ -179,6 +179,12 @@ function updatePlayingScreen(state) {
 	const questionBox = document.getElementById("questionBox");
 	if (questionBox && state.question) {
 		questionBox.textContent = state.question;
+
+		// Hide reasoning section when new question appears
+		const aiReasoning = document.getElementById("aiReasoning");
+		if (aiReasoning) {
+			aiReasoning.classList.add("hidden");
+		}
 	}
 
 	// Update tension

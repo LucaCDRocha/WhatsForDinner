@@ -117,6 +117,14 @@ async function analyzeResponses() {
 					elphiMessage.classList.add("hidden");
 				}, 5000);
 			}
+
+			// Show reasoning section
+			const aiReasoning = document.getElementById("aiReasoning");
+			const reasoningText = document.getElementById("reasoningText");
+			if (aiReasoning && reasoningText && data.feedback) {
+				reasoningText.textContent = data.feedback;
+				aiReasoning.classList.remove("hidden");
+			}
 		} else {
 			throw new Error(data.error || "Failed to analyze responses");
 		}
