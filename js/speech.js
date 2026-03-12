@@ -8,7 +8,7 @@ let originalText = ""; // Store original text before starting recognition
 // Silence detection variables
 let silenceTimer = null;
 let lastSpeechTime = 0;
-const SILENCE_DURATION = 5000; // 5 seconds of silence to auto-stop
+const SILENCE_DURATION = 2000; // 2 seconds of silence to auto-stop
 
 /**
  * Initialize speech recognition
@@ -67,11 +67,24 @@ function initSpeechRecognition() {
 	recognition.onerror = (event) => {
 		console.error("Speech recognition error:", event.error);
 
+		// Handle "no-speech" error silently - it's expected when recording without speaking
+		if (event.error === "no-speech") {
+			console.log("No speech detected - stopping recording silently");
+			stopSpeechRecognition();
+			return;
+		}
+
+		// Handle "aborted" error silently - it's expected when manually stopping
+		if (event.error === "aborted") {
+			console.log("Speech recognition aborted");
+			stopSpeechRecognition();
+			return;
+		}
+
+		// Show alerts only for actual errors that need user attention
 		const errorMessages = {
 			"not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
-			"no-speech": "No speech detected. Please try again.",
 			network: "Network error occurred. Please check your internet connection.",
-			aborted: "Speech recognition was aborted.",
 			"audio-capture": "No microphone found. Please connect a microphone.",
 			"service-not-allowed": "Speech recognition service is not allowed.",
 		};
@@ -180,7 +193,7 @@ function updateVoiceRecordButton(listening) {
 			// Update timer display
 			if (timerDisplay && timerText) {
 				timerDisplay.classList.remove("hidden");
-				timerText.innerHTML = "🔴 Recording... (will stop after 5s of silence once you speak)";
+				timerText.innerHTML = "🔴 Recording... (will stop after 2s of silence once you speak)";
 			}
 		} else {
 			button.innerHTML = "🎤 Record";
