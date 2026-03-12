@@ -2,6 +2,8 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 const path = require("path");
+const { SerialPort } = require("serialport");
+const { ReadlineParser } = require("@serialport/parser-readline");
 
 // Check if fetch is available (Node 18+)
 if (typeof fetch === "undefined") {
@@ -9,6 +11,62 @@ if (typeof fetch === "undefined") {
 	console.error("Please upgrade to Node.js 18 or later, or install node-fetch");
 	process.exit(1);
 }
+
+// Arduino Serial Port Configuration
+const ARDUINO_PORT = "COM3"; // Change this to your Arduino port (check Arduino IDE)
+const ARDUINO_BAUD_RATE = 9600;
+let arduinoPort = null;
+let arduinoConnected = false;
+
+// Try to connect to Arduino
+function connectArduino() {
+	try {
+		arduinoPort = new SerialPort({
+			path: ARDUINO_PORT,
+			baudRate: ARDUINO_BAUD_RATE,
+		});
+
+		const parser = arduinoPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+
+		arduinoPort.on("open", () => {
+			console.log("🤖 Arduino connected on", ARDUINO_PORT);
+			arduinoConnected = true;
+			// Send initial tension value
+			sendTensionToArduino(gameState.tension);
+		});
+
+		arduinoPort.on("error", (err) => {
+			console.warn("⚠️  Arduino connection error:", err.message);
+			console.warn("⚠️  Game will continue without physical balloon display");
+			arduinoConnected = false;
+		});
+
+		parser.on("data", (data) => {
+			console.log("🤖 Arduino:", data.trim());
+		});
+	} catch (error) {
+		console.warn("⚠️  Could not connect to Arduino:", error.message);
+		console.warn("⚠️  Game will continue without physical balloon display");
+		arduinoConnected = false;
+	}
+}
+
+// Send tension value to Arduino
+function sendTensionToArduino(tension) {
+	if (arduinoConnected && arduinoPort) {
+		const command = `TENSION:${Math.round(tension)}\n`;
+		arduinoPort.write(command, (err) => {
+			if (err) {
+				console.error("❌ Error writing to Arduino:", err.message);
+			} else {
+				console.log(`🎈 Sent to Arduino: ${command.trim()}`);
+			}
+		});
+	}
+}
+
+// Connect to Arduino on startup
+connectArduino();
 
 const app = express();
 const server = http.createServer(app);
@@ -308,6 +366,9 @@ Be strict - only say YES if responses show clear coordination and agreement on w
 			gameState.tension = newTension;
 			gameState.feedback = reason; // Add feedback to gameState so it gets broadcast
 
+			// Send tension update to Arduino balloon controller
+			sendTensionToArduino(newTension);
+
 			console.log(
 				`📊 Analysis: ${action} by ${amount} | Tension: ${gameState.tension} → ${newTension} | Reason: ${reason}`,
 			);
@@ -388,6 +449,9 @@ function resetGame() {
 	gameState.tension = 50;
 	gameState.round = 0;
 	gameState.responses = [];
+
+	// Reset Arduino balloon to middle position
+	sendTensionToArduino(50);
 
 	// Reset player ready states
 	gameState.players.forEach((p) => {
@@ -509,6 +573,9 @@ app.post("/api/start", express.json(), async (req, res) => {
 			gameState.tension = inflationMatch ? parseInt(inflationMatch[1]) : 50;
 			gameState.status = "playing";
 			gameState.round = 1;
+
+			// Send initial tension to Arduino
+			sendTensionToArduino(gameState.tension);
 
 			// Parse and assign role-specific situations (using WhatsForDinnerSimple approach)
 			if (rolesMatch) {
