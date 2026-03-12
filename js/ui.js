@@ -120,6 +120,7 @@ function updateGameUI(state) {
 	const playingScreen = document.getElementById("playingScreen");
 	const winScreen = document.getElementById("winScreen");
 	const loseScreen = document.getElementById("loseScreen");
+	const gameCard = document.getElementById("gameCard");
 
 	// Hide all screens
 	welcomeScreen.classList.add("hidden");
@@ -132,21 +133,25 @@ function updateGameUI(state) {
 		case "ready":
 			body.className = state.status;
 			welcomeScreen.classList.remove("hidden");
+			if (gameCard) gameCard.classList.add("hidden");
 			break;
 
 		case "playing":
 			body.className = "playing";
+			if (gameCard) gameCard.classList.remove("hidden");
 			playingScreen.classList.remove("hidden");
 			updatePlayingScreen(state);
 			break;
 
 		case "won":
 			body.className = "won";
+			if (gameCard) gameCard.classList.remove("hidden");
 			winScreen.classList.remove("hidden");
 			break;
 
 		case "lost":
 			body.className = "lost";
+			if (gameCard) gameCard.classList.remove("hidden");
 			loseScreen.classList.remove("hidden");
 			break;
 	}
