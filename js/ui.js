@@ -341,12 +341,9 @@ function startThinkingTimer() {
 	voiceRecordBtn.disabled = true;
 	voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
 
-	// Show timer display
+	// Hide timer display during thinking phase (only show during recording)
 	if (timerDisplay) {
-		timerDisplay.classList.remove("hidden");
-		if (timerText) {
-			timerText.textContent = `⏳ Think & discuss: ${thinkingSeconds}s`;
-		}
+		timerDisplay.classList.add("hidden");
 	}
 
 	const playerRole = playerData ? (playerData.roleIndex === 0 ? "Player 1" : "Player 2") : "Player";
@@ -359,10 +356,6 @@ function startThinkingTimer() {
 		if (thinkingSeconds > 0) {
 			// Update button
 			voiceRecordBtn.innerHTML = `⏳ Think & discuss (${thinkingSeconds}s)`;
-			// Update timer display
-			if (timerText) {
-				timerText.textContent = `⏳ Think & discuss: ${thinkingSeconds}s`;
-			}
 		} else {
 			// Thinking time is over, start recording automatically
 			clearInterval(thinkingTimer);

@@ -5,6 +5,8 @@ const path = require("path");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
+console.log("🚀 Loading server modules...");
+
 // Check if fetch is available (Node 18+)
 if (typeof fetch === "undefined") {
 	console.error("❌ ERROR: fetch is not available!");
@@ -64,9 +66,6 @@ function sendTensionToArduino(tension) {
 		});
 	}
 }
-
-// Connect to Arduino on startup
-connectArduino();
 
 const app = express();
 const server = http.createServer(app);
@@ -770,5 +769,10 @@ server.listen(PORT, async () => {
 		console.error("   3. Local Server is started (port 1234)");
 		console.error(`   Error: ${error.message}`);
 	}
+
+	// Connect to Arduino for physical balloon display
+	console.log("\n🤖 Connecting to Arduino...");
+	connectArduino();
+
 	console.log("=".repeat(60) + "\n");
 });
