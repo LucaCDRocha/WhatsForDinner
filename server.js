@@ -15,7 +15,7 @@ if (typeof fetch === "undefined") {
 }
 
 // Arduino Serial Port Configuration
-const ARDUINO_PORT = "COM3"; // Change this to your Arduino port (check Arduino IDE)
+const ARDUINO_PORT = "COM4"; // Change this to your Arduino port (check Arduino IDE)
 const ARDUINO_BAUD_RATE = 9600;
 let arduinoPort = null;
 let arduinoConnected = false;

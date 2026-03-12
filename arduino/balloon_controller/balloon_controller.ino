@@ -89,9 +89,11 @@ void updateBalloon() {
   
   if (tensionDiff > 0) {
     // INFLATE: Need to increase tension
+    digitalWrite(pinRelay, HIGH);  // Turn pump ON
     inflateStep();
   } else {
     // DEFLATE: Need to decrease tension
+    digitalWrite(pinRelay, LOW);  // Turn pump OFF
     deflateStep();
   }
 }
@@ -100,9 +102,7 @@ void updateBalloon() {
  * Inflate balloon (increase tension)
  */
 void inflateStep() {
-  // Turn on air pump
-  digitalWrite(pinRelay, HIGH);
-  
+  // Pump is controlled in updateBalloon()
   // Keep valve closed (stepper at position)
   // No stepper movement needed
   
@@ -115,10 +115,9 @@ void inflateStep() {
   Serial.print("INFLATING -> Tension: ");
   Serial.println(currentTension);
   
-  // Turn off pump if target reached
+  // Check if target reached
   if (currentTension >= targetTension) {
-    digitalWrite(pinRelay, LOW);
-    Serial.println("TARGET REACHED - Pump OFF");
+    Serial.println("TARGET REACHED - Pump will turn OFF");
   }
 }
 
@@ -126,8 +125,7 @@ void inflateStep() {
  * Deflate balloon (decrease tension)
  */
 void deflateStep() {
-  // Turn off air pump
-  digitalWrite(pinRelay, LOW);
+  // Pump is controlled in updateBalloon()
   
   // Open valve using stepper motor
   // Rotate to release air
