@@ -344,7 +344,7 @@ function startThinkingTimer() {
 	}
 
 	// Set thinking time to 10 seconds
-	thinkingSeconds = 10;
+	thinkingSeconds = 30;
 
 	const voiceRecordBtn = document.getElementById("voiceRecordBtn");
 
